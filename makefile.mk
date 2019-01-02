@@ -13,10 +13,10 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-AVRLIB_TOOLS_PATH ?= /usr/local/CrossPack-AVR/bin/
+AVRLIB_TOOLS_PATH ?= /usr/bin/
 BUILD_ROOT     = build/
 BUILD_DIR      = $(BUILD_ROOT)$(TARGET)/
-PROGRAMMER     ?= avrispmkII
+PROGRAMMER     ?= usbasp
 PROGRAMMER_PORT ?= usb
 AVRDUDE_ERASE  ?= no
 AVRDUDE_LOCK   ?= yes
@@ -71,7 +71,7 @@ REMOVE         = rm -f
 CAT            = cat
 
 CPPFLAGS      = -mmcu=$(MCU) -I. \
-			-g -Os -w -Wall \
+			-g -Os -Wall -Wextra -pedantic \
 			-DF_CPU=$(F_CPU) \
 			-D__PROG_TYPES_COMPAT__ \
 			-fdata-sections \
