@@ -20,14 +20,14 @@
 #ifndef AVRLIB_TIME_H_
 #define AVRLIB_TIME_H_
 
-#include <avr/delay.h>
+#include <util/delay.h>
 
 #include "avrlib/base.h"
 
 namespace avrlib {
 
 uint32_t milliseconds();
-uint32_t Delay(uint32_t delay);
+void Delay(uint32_t delay);
 
 #define ConstantDelay(x) _delay_ms((x))
 

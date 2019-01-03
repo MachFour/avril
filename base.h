@@ -18,7 +18,6 @@
 // Base header.
 
 #ifndef AVRLIB_BASE_H_
-#define __PROG_TYPES_COMPAT__
 #define AVRLIB_BASE_H_
 
 #include <inttypes.h>

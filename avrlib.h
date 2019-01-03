@@ -44,27 +44,27 @@ enum DigitalValue {
 // pass it as a template argument.
 #define IORegister(reg) struct reg##Register { \
   static volatile uint8_t* ptr() { return &reg; } \
-  reg##Register& operator=(const uint8_t& value) { *ptr() = value; } \
-  uint8_t operator()(const uint8_t& value) { return *ptr(); } \
-};
+  reg##Register& operator=(const uint8_t& value) { *ptr() = value; return *this; } \
+  uint8_t operator()() { return *ptr(); } \
+}
 
 #define IORegister16(reg) struct reg##Register { \
   static volatile uint16_t* ptr() { return &reg; } \
-  reg##Register& operator=(const uint16_t& value) { *ptr() = value; } \
-  uint16_t operator()(const uint16_t& value) { return *ptr(); } \
-};
+  reg##Register& operator=(const uint16_t& value) { *ptr() = value; return *this; } \
+  uint16_t operator()() { return *ptr(); } \
+}
 
 #define SpecialFunctionRegister(reg) struct reg##Register { \
   static volatile uint8_t* ptr() { return &_SFR_BYTE(reg); } \
-  reg##Register& operator=(const uint8_t& value) { *ptr() = value; } \
-  uint8_t operator()(const uint8_t& value) { return *ptr(); } \
-};
+  reg##Register& operator=(const uint8_t& value) { *ptr() = value; return *this; } \
+  uint8_t operator()() { return *ptr(); } \
+}
 
 #define SpecialFunctionRegister16(reg) struct reg##Register { \
   static volatile uint16_t* ptr() { return &_SFR_WORD(reg); } \
-  reg##Register& operator=(const uint16_t& value) { *ptr() = value; } \
-  uint16_t operator()(const uint16_t& value) { return *ptr(); } \
-};
+  reg##Register& operator=(const uint16_t& value) { *ptr() = value; return *this; } \
+  uint16_t operator()() { return *ptr(); } \
+}
 
 
 // Represents a bit in an i/o port register.

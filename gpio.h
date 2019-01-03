@@ -148,11 +148,7 @@ struct GpioImpl {
     OutputBit::toggle();
   }
   static inline void set_value(uint8_t value) {
-    if (value == 0) {
-      Low();
-    } else {
-      High();
-    }
+    value == 0 ? Low() : High();
   }
   
   static inline void set_pwm_value(uint8_t value) {
@@ -240,7 +236,7 @@ struct NumberedGpioInternal { };
 // Macro to make the pin definitions (template specializations) easier to read.
 #define SetupGpio(n, port, timer, bit) \
 template<> struct NumberedGpioInternal<n> { \
-  typedef GpioImpl<port, timer, bit> Impl; };
+  typedef GpioImpl<port, timer, bit> Impl; }
 
 // Pin definitions for ATmega lineup
 

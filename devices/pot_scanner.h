@@ -26,6 +26,8 @@
 #include "avrlib/adc.h"
 #include "avrlib/log2.h"
 
+#include <string.h>
+
 namespace avrlib {
 
 template<

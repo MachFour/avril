@@ -70,10 +70,9 @@ AVRDUDE        = $(AVRLIB_TOOLS_PATH)avrdude
 REMOVE         = rm -f
 CAT            = cat
 
-CPPFLAGS      = -mmcu=$(MCU) -I. \
-			-g -Os -Wall -Wextra -pedantic \
+CPPFLAGS      = -mmcu=$(MCU) -I. -std=c++14 \
+			-g -Os -Wall -Wextra -pedantic -Wno-unused-parameter \
 			-DF_CPU=$(F_CPU) \
-			-D__PROG_TYPES_COMPAT__ \
 			-fdata-sections \
 			-ffunction-sections \
 			-fshort-enums \
@@ -187,10 +186,7 @@ $(BUILD_DIR)$(TARGET).top_symbols: $(TARGET_ELF)
 		$(NM) $(TARGET_ELF) --size-sort -C -f bsd -r > $@
 
 size: $(TARGET).size
-		cat $(TARGET).size | awk '{ print $$1+$$2 }' | tail -n1 | figlet | cowsay -n -f moose
-
-ramsize: $(TARGET).size
-		cat $(TARGET).size | awk '{ print $$2+$$3 }' | tail -n1 | figlet | cowsay -n -f small
+		avr-objdump -P mem-usage $(TARGET_ELF)
 
 size_report:  build/$(TARGET)/$(TARGET).lss build/$(TARGET)/$(TARGET).top_symbols
 
