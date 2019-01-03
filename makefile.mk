@@ -71,7 +71,8 @@ REMOVE         = rm -f
 CAT            = cat
 
 CPPFLAGS      = -mmcu=$(MCU) -I. -std=c++14 \
-			-g -Os -Wall -Wextra -pedantic -Wno-unused-parameter \
+			-g -Os -Wall -Wextra -pedantic \
+			-Wno-unused-parameter \
 			-DF_CPU=$(F_CPU) \
 			-fdata-sections \
 			-ffunction-sections \
@@ -82,6 +83,7 @@ CPPFLAGS      = -mmcu=$(MCU) -I. -std=c++14 \
 			-D$(MCU_DEFINE) \
 			-DSERIAL_RX_0 \
 			-mcall-prologues
+			#-Wsign-conversion -Wconversion
 CXXFLAGS      = -fno-exceptions
 ASFLAGS       = -mmcu=$(MCU) -I. -x assembler-with-cpp
 LDFLAGS       = -mmcu=$(MCU) -lm -Os -Wl,--gc-sections$(EXTRA_LD_FLAGS)

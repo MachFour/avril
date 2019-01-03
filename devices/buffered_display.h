@@ -95,7 +95,7 @@ class BufferedDisplay {
   }
 
   static inline void set_status(uint8_t status) {
-    status_ = status + 1;
+    status_ = status + 1_u8;
     Lcd::ResetStatusCounter();
     previous_status_counter_ = 0;
   }
@@ -104,13 +104,13 @@ class BufferedDisplay {
     if (Lcd::writable() < 4) {
       return;
     }
-    status_ = status + 1;
+    status_ = status + 1_u8;
     scan_position_ = 0;
     scan_row_ = 0;
     scan_column_ = 0;
     Lcd::MoveCursor(scan_row_, scan_column_);
     Lcd::WriteData(status_ - 1);
-    remote_[scan_position_] = status_ - 1;
+    remote_[scan_position_] = status_ - 1_u8;
   }
   
   static void BlinkCursor() {
@@ -136,7 +136,7 @@ class BufferedDisplay {
     // Determine which character to show at the current position.
     // If the scan position is the cursor and it is shown (blinking), draw the
     // cursor.
-    if (scan_position_ == cursor_position_ && (blink_ & 128)) {
+    if (scan_position_ == cursor_position_ && (blink_ & 128_u8)) {
       character = cursor_character_;
     } else {
       // Otherwise, check if there's a status indicator to display. It is
@@ -144,7 +144,7 @@ class BufferedDisplay {
       // the available space.
       if (status_ && (scan_position_ == 0 || scan_position_ == (width - 1)) &&
           local_[scan_position_] == ' ') {
-        character = status_ - 1;
+        character = status_ - 1_u8;
       } else {
         character = local_[scan_position_];
       }

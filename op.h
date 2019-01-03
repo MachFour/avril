@@ -21,7 +21,7 @@
 #ifndef AVRLIB_OP_H_
 #define AVRLIB_OP_H_
 
-//#define USE_OPTIMIZED_OP
+#define USE_OPTIMIZED_OP
 
 #include <avr/pgmspace.h>
 
@@ -29,15 +29,36 @@
 
 namespace avrlib {
 
-static inline int16_t Clip(int16_t value, int16_t min, int16_t max) {
+template<typename T>
+static inline T Clip(int32_t value, T min, T max) {
+  return value < min ? min : (value > max ? max : value);
+}
+template<typename T>
+static inline T Clip(int16_t value, T min, T max) {
+    return value < min ? min : (value > max ? max : value);
+}
+template<typename T>
+static inline T Clip(int8_t value, T min, T max) {
+  return value < min ? min : (value > max ? max : value);
+}
+template<typename T>
+static inline T Clip(uint32_t value, T min, T max) {
+  return value < min ? min : (value > max ? max : value);
+}
+template<typename T>
+static inline T Clip(uint16_t value, T min, T max) {
+  return value < min ? min : (value > max ? max : value);
+}
+template<typename T>
+static inline T Clip(uint8_t value, T min, T max) {
   return value < min ? min : (value > max ? max : value);
 }
 
 static inline int16_t S16ClipU14(int16_t value) {
-  uint8_t msb = static_cast<uint16_t>(value) >> 8;
-  if (msb & 0x80) {
+  uint8_t msb = lowByte(value);
+  if (msb & 0x80u) {
     return 0;
-  } if (msb & 0x40) {
+  } if (msb & 0x40u) {
     return 16383;
   }
   return value;
@@ -53,7 +74,7 @@ static inline uint8_t U8AddClip(uint8_t value, uint8_t increment, uint8_t max) {
 
 // Correct only if the input is positive.
 static inline uint8_t S16ShiftRight8(int16_t value) {
-  return static_cast<uint16_t>(value) >> 8;
+  return lowByte(value);
 }
 
 #ifdef USE_OPTIMIZED_OP
@@ -164,7 +185,7 @@ static inline uint8_t S16ClipU8(int16_t value) {
 }
 
 static inline int8_t S16ClipS8(int16_t value) {
-  return S16ClipU8(value + 128) + 128;
+  return static_cast<int8_t>(S16ClipU8(value + 128) + 128);
 }
 
 static inline uint8_t U8Mix(uint8_t a, uint8_t b, uint8_t balance) {
@@ -178,7 +199,7 @@ static inline uint8_t U8Mix(uint8_t a, uint8_t b, uint8_t balance) {
     "add %A0, r0"     "\n\t"  // add to sum L
     "adc %B0, r1"     "\n\t"  // add to sum H
     "eor r1, r1"      "\n\t"  // reset r1 after multiplication
-    : "&=r" (sum)
+    : "=&r" (sum)
     : "a" (a), "a" (balance), "a" (b)
     );
   return sum.bytes[1];
@@ -195,7 +216,7 @@ static inline uint8_t U8Mix(
     "add %A0, r0"     "\n\t"  // add to sum L
     "adc %B0, r1"     "\n\t"  // add to sum H
     "eor r1, r1"      "\n\t"  // reset r1 after multiplication
-    : "&=r" (sum)
+    : "=&r" (sum)
     : "a" (a), "a" (gain_a), "a" (b), "a" (gain_b)
     );
   return sum.bytes[1];
@@ -212,7 +233,7 @@ static inline int8_t S8Mix(
     "add %A0, r0"     "\n\t"  // add to sum L
     "adc %B0, r1"     "\n\t"  // add to sum H
     "eor r1, r1"      "\n\t"  // reset r1 after multiplication
-    : "&=r" (sum)
+    : "=&r" (sum)
     : "a" (a), "a" (gain_a), "a" (b), "a" (gain_b)
     );
   return sum.bytes[1];
@@ -229,7 +250,7 @@ static inline uint16_t U8MixU16(uint8_t a, uint8_t b, uint8_t balance) {
     "add %A0, r0"     "\n\t"  // add to sum L
     "adc %B0, r1"     "\n\t"  // add to sum H
     "eor r1, r1"      "\n\t"  // reset r1 after multiplication
-    : "&=r" (sum)
+    : "=&r" (sum)
     : "a" (a), "a" (balance), "a" (b)
     );
   return sum.value;
@@ -272,7 +293,7 @@ static inline uint16_t U8U4MixU12(uint8_t a, uint8_t b, uint8_t balance) {
     "add %A0, r0"     "\n\t"  // add to sum L
     "adc %B0, r1"     "\n\t"  // add to sum H
     "eor r1, r1"      "\n\t"  // reset r1 after multiplication
-    : "&=r" (sum)
+    : "=&r" (sum)
     : "a" (a), "a" (balance), "a" (b)
     );
   return sum;
@@ -408,8 +429,8 @@ static inline int8_t S8S8MulShift8(int8_t a, int8_t b) {
 // a couple of cycles. Note that this solution only works for operands with
 // a 14-bits resolution.
 static inline uint8_t U14ShiftRight6(uint16_t value) {
-  uint8_t b = value >> 8;
-  uint8_t a = value & 0xff;
+  uint8_t b = highByte(value);
+  uint8_t a = lowByte(value);
   uint8_t result;
   asm(
     "add %1, %1"       "\n\t"
@@ -423,8 +444,8 @@ static inline uint8_t U14ShiftRight6(uint16_t value) {
 }
 
 static inline uint8_t U15ShiftRight7(uint16_t value) {
-  uint8_t b = value >> 8;
-  uint8_t a = value & 0xff;
+  uint8_t b = highByte(value);
+  uint8_t a = lowByte(value);
   uint8_t result;
   asm(
     "add %1, %1"       "\n\t"

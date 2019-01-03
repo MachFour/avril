@@ -20,6 +20,7 @@
 #ifndef AVRLIB_BASE_H_
 #define AVRLIB_BASE_H_
 
+#include "bitops.h"
 #include <inttypes.h>
 
 #ifndef NULL
@@ -47,6 +48,7 @@ struct uint24c_t {
   uint16_t integral;
   uint8_t fractional;
 };
+
 
 template<uint32_t a, uint32_t b, uint32_t c, uint32_t d>
 struct FourCC {
