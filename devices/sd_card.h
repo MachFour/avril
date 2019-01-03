@@ -398,7 +398,7 @@ class SdCard {
     if (command == SD_CMD_SEND_IF_COND) {
       crc = 0x87;
     }
-    uint8_t status;
+    uint8_t status = 0;
     Spi::Send(crc);
     for (uint8_t i = 0; i < 20; i++) {
       status = Spi::Receive();
@@ -458,7 +458,7 @@ class SdCard {
   
   template<uint16_t timeout>
   static uint8_t WaitForData() {
-    uint8_t status;
+    uint8_t status = 0;
     if (timeout == 0) {
       // Arbitrary timeout that doesn't use the system clock.
       for (uint16_t i = 0; i < 0xffff; ++i) {
