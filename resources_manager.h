@@ -53,8 +53,9 @@ class ResourcesManager {
     if (!Tables::string_table()) {
       return;
     }
-    char* address = (char*)(pgm_read_word(&(Tables::string_table()[resource])));
-    strncpy_P(buffer, address, buffer_size);
+    auto string_addr = reinterpret_cast<char*>(
+            pgm_read_word(&(Tables::string_table()[resource])));
+    strncpy_P(buffer, string_addr, buffer_size);
   }
 
   template<typename ResultType, typename IndexType>
@@ -62,9 +63,9 @@ class ResourcesManager {
     if (!Tables::lookup_table_table()) {
       return 0;
     };
-    uint16_t* address = (uint16_t*)(
-    pgm_read_word(&(Tables::lookup_table_table()[resource])));
-    return ResultType(pgm_read_word(address + i));
+    auto resource_start_addr = reinterpret_cast<uint16_t*>(
+            pgm_read_word(&(Tables::lookup_table_table()[resource])));
+    return ResultType(pgm_read_word(resource_start_addr + i));
   }
 
   template<typename ResultType, typename IndexType>

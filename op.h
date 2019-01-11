@@ -23,12 +23,22 @@
 
 #define USE_OPTIMIZED_OP
 
-#include <avr/pgmspace.h>
 
 #include "avrlib/base.h"
+#include "avrlib/bitops.h"
+
+#include <avr/pgmspace.h>
 
 namespace avrlib {
 
+template<typename T>
+static inline T Clip(int64_t value, T min, T max) {
+  return value < min ? min : (value > max ? max : value);
+}
+template<typename T>
+static inline T Clip(uint64_t value, T min, T max) {
+  return value < min ? min : (value > max ? max : value);
+}
 template<typename T>
 static inline T Clip(int32_t value, T min, T max) {
   return value < min ? min : (value > max ? max : value);

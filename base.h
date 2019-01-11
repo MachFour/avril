@@ -20,7 +20,6 @@
 #ifndef AVRLIB_BASE_H_
 #define AVRLIB_BASE_H_
 
-#include "bitops.h"
 #include <inttypes.h>
 
 #ifndef NULL
@@ -63,7 +62,7 @@ template<bool b>
 inline void StaticAssertImplementation() {
 	char static_assert_size_mismatch[b] = { 0 };
 }
- 
+
 #define STATIC_ASSERT(expression) StaticAssertImplementation<(expression)>()
 
 #endif  // AVRLIB_BASE_H_

@@ -72,7 +72,7 @@ CAT            = cat
 
 CPPFLAGS      = -mmcu=$(MCU) -I. -std=c++14 \
 			-g -Os -Wall -Wextra -pedantic \
-			-Wno-unused-parameter \
+			-Wno-unused-parameter -Wno-narrowing \
 			-DF_CPU=$(F_CPU) \
 			-fdata-sections \
 			-ffunction-sections \
@@ -82,11 +82,12 @@ CPPFLAGS      = -mmcu=$(MCU) -I. -std=c++14 \
 			$(MMC_CONFIG) \
 			-D$(MCU_DEFINE) \
 			-DSERIAL_RX_0 \
-			-mcall-prologues
+			-mcall-prologues \
+			-mrelax
 			#-Wsign-conversion -Wconversion
 CXXFLAGS      = -fno-exceptions
 ASFLAGS       = -mmcu=$(MCU) -I. -x assembler-with-cpp
-LDFLAGS       = -mmcu=$(MCU) -lm -Os -Wl,--gc-sections$(EXTRA_LD_FLAGS)
+LDFLAGS       = -mmcu=$(MCU) -lm -Os -Wl,--relax -Wl,--gc-sections$(EXTRA_LD_FLAGS) \
 
 # ------------------------------------------------------------------------------
 # Source compiling
@@ -181,14 +182,15 @@ clean:
 depends:  $(DEPS)
 		cat $(DEPS) > $(DEP_FILE)
 
-$(TARGET).size:  $(TARGET_ELF)
-		$(SIZE) $(TARGET_ELF) > $(TARGET).size
+$(TARGET).size: $(TARGET_ELF)
+		$(OBJDUMP) -P mem-usage $(TARGET_ELF) > $(TARGET).size
+		$(SIZE) $(TARGET_ELF) >> $(TARGET).size
 
 $(BUILD_DIR)$(TARGET).top_symbols: $(TARGET_ELF)
 		$(NM) $(TARGET_ELF) --size-sort -C -f bsd -r > $@
 
-size: $(TARGET).size
-		avr-objdump -P mem-usage $(TARGET_ELF)
+size: #$(TARGET).size
+	cat $(TARGET).size
 
 size_report:  build/$(TARGET)/$(TARGET).lss build/$(TARGET)/$(TARGET).top_symbols
 

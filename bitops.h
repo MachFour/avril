@@ -15,8 +15,29 @@ inline constexpr uint8_t U8(T x) {
 }
 
 template <typename T>
+inline constexpr uint8_t U7(T x) {
+  return static_cast<uint8_t>(x & 0x7f);
+}
+
+template <typename T>
 inline constexpr uint16_t U16(T x) {
     return static_cast<uint16_t>(x);
+}
+template <typename T>
+inline constexpr int8_t S8(T x) {
+    return static_cast<int8_t>(x);
+}
+
+template <typename T>
+inline constexpr int16_t S16(T x) {
+    return static_cast<int16_t>(x);
+}
+
+// returns bit at 8th position (MSB for a byte)
+template <typename T>
+inline constexpr uint8_t MSB8(T x) {
+    return U8((x & 0x80u) != 0);
+
 }
 
 // easy way to make uint8_t integer literals
@@ -64,8 +85,8 @@ inline constexpr uint8_t byteAnd(S b1, T b2, U b3) {
 }
 
 template<typename T>
-inline constexpr uint8_t byteMask(T b) {
-    return U8(1_u8 << U8(b));
+inline constexpr uint8_t bitFlag(T b) {
+    return U8(1u << U8(b));
 }
 
 template<typename T>
