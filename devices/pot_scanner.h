@@ -37,8 +37,6 @@ template<
     uint8_t resolution = 7>
 class PotScanner {
  public:
-  PotScanner() { }
-
   static inline void Init() {
     Adc::Init();
     Adc::set_alignment(ADC_LEFT_ALIGNED);
@@ -115,8 +113,6 @@ template<
     uint8_t resolution = 10>
 class HysteresisPotScanner {
  public:
-  HysteresisPotScanner() { }
-
   static inline void Init() {
     Adc::Init();
     scan_cycle_ = 0;

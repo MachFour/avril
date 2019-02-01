@@ -84,14 +84,44 @@ inline constexpr uint8_t byteAnd(S b1, T b2, U b3) {
     return byteAnd(byteAnd(b1, b2), b3);
 }
 
+constexpr uint8_t bitFlag8Lookup(uint8_t bit) {
+  switch (bit) {
+    case 0: return 1;
+    case 1: return 2;
+    case 2: return 4;
+    case 3: return 8;
+    case 4: return 16;
+    case 5: return 32;
+    case 6: return 64;
+    case 7: return 128;
+    default: return 0;
+  }
+}
+
 template<typename T>
-inline constexpr uint8_t bitFlag(T b) {
-    return U8(1u << U8(b));
+inline constexpr uint8_t bitFlag8(T b) {
+    //return U8(1u << U8(b));
+    return bitFlag8Lookup(U8(b));
+}
+
+
+template<typename T>
+inline constexpr uint16_t bitFlag16(T b) {
+    return U16(1u << U8(b));
 }
 
 template<typename T>
 inline constexpr uint8_t byteInverse(T b) {
     return U8(~b);
+}
+
+template<typename T>
+inline constexpr bool bitTest(uint8_t byte, T bit) {
+    return byteAnd(byte, bitFlag8(bit));
+}
+template<typename T>
+inline constexpr bool bitTest(uint16_t word, T bit) {
+    return (word & bitFlag16(bit)) != 0;
 }
 
 //#define mask1(bit1) bitMask(bit1)

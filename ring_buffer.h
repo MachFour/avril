@@ -38,8 +38,6 @@ class RingBuffer : public Input, Output {
     data_size = Owner::data_size
   };
   
-  RingBuffer() { }
-  
   static inline uint8_t capacity() { return size; }
   static inline void Write(Value v) {
     while (!writable());

@@ -70,14 +70,20 @@ AVRDUDE        = $(AVRLIB_TOOLS_PATH)avrdude
 REMOVE         = rm -f
 CAT            = cat
 
+#TODO nostdlib
 CPPFLAGS      = -mmcu=$(MCU) -I. -std=c++14 \
 			-g -Os -Wall -Wextra -pedantic \
 			-Wno-unused-parameter -Wno-narrowing \
+			-ffreestanding \
+			-fno-common \
 			-DF_CPU=$(F_CPU) \
 			-fdata-sections \
 			-ffunction-sections \
 			-fshort-enums \
 			-fno-move-loop-invariants \
+			-finline-small-functions \
+			-findirect-inlining \
+			-nostdlib \
 			$(EXTRA_DEFINES) \
 			$(MMC_CONFIG) \
 			-D$(MCU_DEFINE) \
@@ -85,8 +91,11 @@ CPPFLAGS      = -mmcu=$(MCU) -I. -std=c++14 \
 			-mcall-prologues \
 			-mrelax
 			#-Wsign-conversion -Wconversion
-CXXFLAGS      = -fno-exceptions
+# these are from https://bitbashing.io/embedded-cpp.html
+CXXFLAGS      = -fno-exceptions -fno-non-call-exceptions \
+				-fno-use-cxa-atexit
 ASFLAGS       = -mmcu=$(MCU) -I. -x assembler-with-cpp
+# TODO Link-time optimisation flags
 LDFLAGS       = -mmcu=$(MCU) -lm -Os -Wl,--relax -Wl,--gc-sections$(EXTRA_LD_FLAGS) \
 
 # ------------------------------------------------------------------------------
@@ -160,7 +169,7 @@ $(BUILD_DIR):
 		mkdir -p $(BUILD_DIR)
 
 $(TARGET_ELF):  $(OBJS)
-		$(CC) $(LDFLAGS) -o $@ $(OBJS) $(SYS_OBJS) -lc
+		$(CC) $(LDFLAGS) -o $@ $(OBJS) $(SYS_OBJS)# -lc
 
 $(DEP_FILE):  $(BUILD_DIR) $(DEPS)
 		cat $(DEPS) > $(DEP_FILE)
@@ -189,7 +198,7 @@ $(TARGET).size: $(TARGET_ELF)
 $(BUILD_DIR)$(TARGET).top_symbols: $(TARGET_ELF)
 		$(NM) $(TARGET_ELF) --size-sort -C -f bsd -r > $@
 
-size: #$(TARGET).size
+size: $(TARGET).size
 	cat $(TARGET).size
 
 size_report:  build/$(TARGET)/$(TARGET).lss build/$(TARGET)/$(TARGET).top_symbols
@@ -255,7 +264,7 @@ flash_restore:
 
 RESOURCE_COMPILER = avrlib/tools/resources_compiler.py
 
-resources:	$(wildcard $(RESOURCES)/*.py) 
+resources:	$(wildcard $(RESOURCES)/*.py)
 		python $(RESOURCE_COMPILER) $(RESOURCES)/resources.py
 
 # ------------------------------------------------------------------------------
