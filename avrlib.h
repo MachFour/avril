@@ -1,6 +1,6 @@
-// Copyright 2009 Emilie Gillet.
+// Copyright 2009 Olivier Gillet.
 //
-// Author: Emilie Gillet (emilie.o.gillet@gmail.com)
+// Author: Olivier Gillet (pichenettes@mutable-instruments.net)
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -24,6 +24,7 @@
 #include <avr/io.h>
 
 #include "avrlib/base.h"
+#include "avrlib/bitops.h"
 #include "avrlib/size_to_type.h"
 
 namespace avrlib {
@@ -43,44 +44,43 @@ enum DigitalValue {
 // The following define wraps this reference into a class to make it easier to
 // pass it as a template argument.
 #define IORegister(reg) struct reg##Register { \
-  static volatile uint8_t* ptr() { return &reg; } \
-  reg##Register& operator=(const uint8_t& value) { *ptr() = value; } \
-  uint8_t operator()(const uint8_t& value) { return *ptr(); } \
-};
+  static volatile uint8_t* ptr() { return &(reg); } \
+  reg##Register& operator=(const uint8_t& value) { *ptr() = value; return *this; } \
+  uint8_t operator()() { return *ptr(); } \
+}
 
 #define IORegister16(reg) struct reg##Register { \
-  static volatile uint16_t* ptr() { return &reg; } \
-  reg##Register& operator=(const uint16_t& value) { *ptr() = value; } \
-  uint16_t operator()(const uint16_t& value) { return *ptr(); } \
-};
+  static volatile uint16_t* ptr() { return &(reg); } \
+  reg##Register& operator=(const uint16_t& value) { *ptr() = value; return *this; } \
+  uint16_t operator()() { return *ptr(); } \
+}
 
 #define SpecialFunctionRegister(reg) struct reg##Register { \
   static volatile uint8_t* ptr() { return &_SFR_BYTE(reg); } \
-  reg##Register& operator=(const uint8_t& value) { *ptr() = value; } \
-  uint8_t operator()(const uint8_t& value) { return *ptr(); } \
-};
+  reg##Register& operator=(const uint8_t& value) { *ptr() = value; return *this; } \
+  uint8_t operator()() { return *ptr(); } \
+}
 
 #define SpecialFunctionRegister16(reg) struct reg##Register { \
   static volatile uint16_t* ptr() { return &_SFR_WORD(reg); } \
-  reg##Register& operator=(const uint16_t& value) { *ptr() = value; } \
-  uint16_t operator()(const uint16_t& value) { return *ptr(); } \
-};
-
+  reg##Register& operator=(const uint16_t& value) { *ptr() = value; return *this; } \
+  uint16_t operator()() { return *ptr(); } \
+}
 
 // Represents a bit in an i/o port register.
-template<typename Register, uint8_t bit>
+template<typename Register, uint8_t bit, uint8_t bitFlag = staticBitFlag(bit)>
 struct BitInRegister {
-  static void clear() {
-    *Register::ptr() &= ~_BV(bit);
+  inline static void clear() {
+    *Register::ptr() &= ~bitFlag;
   }
-  static void set() {
-    *Register::ptr() |= _BV(bit);
+  inline static void set() {
+    *Register::ptr() |= bitFlag;
   }
-  static void toggle() {
-    *Register::ptr() ^= _BV(bit);
+  inline static void toggle() {
+    *Register::ptr() ^= bitFlag;
   }
-  static uint8_t value() {
-    return *Register::ptr() & _BV(bit) ? 1 : 0;
+  inline static uint8_t value() {
+    return (*Register::ptr() & bitFlag) ? 1 : 0;
   }
 };
 
@@ -132,7 +132,7 @@ struct Output {
   } 
 
   // No check for ready state.
-  static inline void Overwrite(Value) { return; }
+  static inline void Overwrite(Value) { }
 
   // Called in data emission interrupt.
   static inline Value Requested() { return 0; }

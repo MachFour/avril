@@ -1,6 +1,6 @@
-// Copyright 2009 Emilie Gillet.
+// Copyright 2009 Olivier Gillet.
 //
-// Author: Emilie Gillet (emilie.o.gillet@gmail.com)
+// Author: Olivier Gillet (pichenettes@mutable-instruments.net)
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -37,7 +37,7 @@ class RingBuffer : public Input, Output {
     size = Owner::buffer_size,
     data_size = Owner::data_size
   };
-  
+
   RingBuffer() { }
   
   static inline uint8_t capacity() { return size; }

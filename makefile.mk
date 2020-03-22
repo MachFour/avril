@@ -1,6 +1,6 @@
-# Copyright 2009 Emilie Gillet.
+# Copyright 2009 Olivier Gillet.
 #
-# Author: Emilie Gillet (emilie.o.gillet@gmail.com)
+# Author: Olivier Gillet (pichenettes@mutable-instruments.net)
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -13,10 +13,10 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-AVRLIB_TOOLS_PATH ?= /usr/local/CrossPack-AVR/bin/
+AVRLIB_TOOLS_PATH ?= /usr/bin/
 BUILD_ROOT     = build/
 BUILD_DIR      = $(BUILD_ROOT)$(TARGET)/
-PROGRAMMER     ?= avrispmkII
+PROGRAMMER     ?= usbasp
 PROGRAMMER_PORT ?= usb
 AVRDUDE_ERASE  ?= no
 AVRDUDE_LOCK   ?= yes
@@ -70,22 +70,38 @@ AVRDUDE        = $(AVRLIB_TOOLS_PATH)avrdude
 REMOVE         = rm -f
 CAT            = cat
 
-CPPFLAGS      = -mmcu=$(MCU) -I. \
-			-g -Os -w -Wall \
-			-DF_CPU=$(F_CPU) \
-			-D__PROG_TYPES_COMPAT__ \
-			-fdata-sections \
-			-ffunction-sections \
+#TODO nostdlib
+
+COMPILE_OPTIONS = \
+			-ffreestanding \
+			-fno-common \
 			-fshort-enums \
 			-fno-move-loop-invariants \
+			-nostdlib \
+			-fverbose-asm \
+			-fdata-sections \
+			-ffunction-sections
+WARNING_OPTIONS = -Wall -Wextra -pedantic -Wno-narrowing #-Wno-unused-parameter -Wno-narrowing
+STD = c++14
+
+CPPFLAGS  = -g -Os -std=$(STD) -I. \
+			-mmcu=$(MCU) \
+			$(WARNING_OPTIONS) \
+			$(COMPILE_OPTIONS) \
+			-DF_CPU=$(F_CPU) \
 			$(EXTRA_DEFINES) \
 			$(MMC_CONFIG) \
 			-D$(MCU_DEFINE) \
 			-DSERIAL_RX_0 \
-			-mcall-prologues
-CXXFLAGS      = -fno-exceptions
+			-mcall-prologues \
+			-mrelax
+			#-Wsign-conversion -Wconversion
+# these are from https://bitbashing.io/embedded-cpp.html
+CXXFLAGS      = -fno-exceptions -fno-non-call-exceptions \
+				-fno-use-cxa-atexit -fno-rtti
 ASFLAGS       = -mmcu=$(MCU) -I. -x assembler-with-cpp
-LDFLAGS       = -mmcu=$(MCU) -lm -Os -Wl,--gc-sections$(EXTRA_LD_FLAGS)
+# TODO Link-time optimisation flags
+LDFLAGS       = -mmcu=$(MCU) -lm -Os -Wl,--relax -Wl,--gc-sections$(EXTRA_LD_FLAGS) \
 
 # ------------------------------------------------------------------------------
 # Source compiling
@@ -158,7 +174,7 @@ $(BUILD_DIR):
 		mkdir -p $(BUILD_DIR)
 
 $(TARGET_ELF):  $(OBJS)
-		$(CC) $(LDFLAGS) -o $@ $(OBJS) $(SYS_OBJS) -lc
+		$(CC) $(LDFLAGS) -o $@ $(OBJS) $(SYS_OBJS)# -lc
 
 $(DEP_FILE):  $(BUILD_DIR) $(DEPS)
 		cat $(DEPS) > $(DEP_FILE)
@@ -180,17 +196,15 @@ clean:
 depends:  $(DEPS)
 		cat $(DEPS) > $(DEP_FILE)
 
-$(TARGET).size:  $(TARGET_ELF)
-		$(SIZE) $(TARGET_ELF) > $(TARGET).size
+$(TARGET).size: $(TARGET_ELF)
+		$(OBJDUMP) -P mem-usage $(TARGET_ELF) > $(TARGET).size
+		$(SIZE) $(TARGET_ELF) >> $(TARGET).size
 
 $(BUILD_DIR)$(TARGET).top_symbols: $(TARGET_ELF)
 		$(NM) $(TARGET_ELF) --size-sort -C -f bsd -r > $@
 
 size: $(TARGET).size
-		cat $(TARGET).size | awk '{ print $$1+$$2 }' | tail -n1 | figlet | cowsay -n -f moose
-
-ramsize: $(TARGET).size
-		cat $(TARGET).size | awk '{ print $$2+$$3 }' | tail -n1 | figlet | cowsay -n -f small
+	cat $(TARGET).size
 
 size_report:  build/$(TARGET)/$(TARGET).lss build/$(TARGET)/$(TARGET).top_symbols
 
@@ -255,7 +269,7 @@ flash_restore:
 
 RESOURCE_COMPILER = avrlib/tools/resources_compiler.py
 
-resources:	$(wildcard $(RESOURCES)/*.py) 
+resources:	$(wildcard $(RESOURCES)/*.py)
 		python $(RESOURCE_COMPILER) $(RESOURCES)/resources.py
 
 # ------------------------------------------------------------------------------

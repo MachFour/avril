@@ -1,6 +1,6 @@
-// Copyright 2009 Emilie Gillet.
+// Copyright 2009 Olivier Gillet.
 //
-// Author: Emilie Gillet (emilie.o.gillet@gmail.com)
+// Author: Olivier Gillet (pichenettes@mutable-instruments.net)
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -31,18 +31,18 @@
 namespace avrlib {
 
 template<
-  const prog_char* const* strings,
-  const prog_uint16_t* const* lookup_tables>
+  const char* const* strings,
+  const uint16_t* const* lookup_tables>
 struct ResourcesTables {
-  static inline const prog_char* const* string_table() { return strings; }
-  static inline const prog_uint16_t* const* lookup_table_table() {
+  static inline const char* const* string_table() { return strings; }
+  static inline const uint16_t* const* lookup_table_table() {
       return lookup_tables;
   }
 };
 
 struct NoResourcesTables {
-  static inline const prog_char* const* string_table() { return NULL; }
-  static inline const prog_uint16_t* const* lookup_table_table() { return NULL; }
+  static inline const char* const* string_table() { return NULL; }
+  static inline const uint16_t* const* lookup_table_table() { return NULL; }
 };
 
 template<typename ResourceId = uint8_t, typename Tables = NoResourcesTables>
@@ -53,8 +53,9 @@ class ResourcesManager {
     if (!Tables::string_table()) {
       return;
     }
-    char* address = (char*)(pgm_read_word(&(Tables::string_table()[resource])));
-    strncpy_P(buffer, address, buffer_size);
+    auto string_addr = reinterpret_cast<char*>(
+            pgm_read_word(&(Tables::string_table()[resource])));
+    strncpy_P(buffer, string_addr, buffer_size);
   }
 
   template<typename ResultType, typename IndexType>
@@ -62,39 +63,39 @@ class ResourcesManager {
     if (!Tables::lookup_table_table()) {
       return 0;
     };
-    uint16_t* address = (uint16_t*)(
-    pgm_read_word(&(Tables::lookup_table_table()[resource])));
-    return ResultType(pgm_read_word(address + i));
+    auto resource_start_addr = reinterpret_cast<uint16_t*>(
+            pgm_read_word(&(Tables::lookup_table_table()[resource])));
+    return ResultType(pgm_read_word(resource_start_addr + i));
   }
 
   template<typename ResultType, typename IndexType>
-  static inline ResultType Lookup(const prog_char* p, IndexType i) {
+  static inline ResultType Lookup(const char* const p, IndexType i) {
     return ResultType(pgm_read_byte(p + i));
   }
 
   template<typename ResultType, typename IndexType>
-  static inline ResultType Lookup(const prog_uint8_t* p, IndexType i) {
+  static inline ResultType Lookup(const uint8_t* const p, IndexType i) {
     return ResultType(pgm_read_byte(p + i));
   }
 
   template<typename ResultType, typename IndexType>
-  static inline ResultType Lookup(const prog_uint16_t* p, IndexType i) {
+  static inline ResultType Lookup(const uint16_t* const p, IndexType i) {
     return ResultType(pgm_read_word(p + i));
   }
 
   template<typename T>
-  static void Load(const prog_char* p, uint8_t i, T* destination) {
+  static void Load(const char* const p, uint8_t i, T* destination) {
     memcpy_P(destination, p + i * sizeof(T), sizeof(T));
   }
-  
+
   template<typename T, typename U>
-  static void Load(const T* p, uint8_t i, U* destination) {
-    STATIC_ASSERT(sizeof(T) == sizeof(U));
+  static void Load(const T* const p, uint8_t i, U* destination) {
+    static_assert(sizeof(T) == sizeof(U));
     memcpy_P(destination, p + i, sizeof(T));
   }
 
   template<typename T>
-  static void Load(const T* p, uint8_t* destination, uint16_t size) {
+  static void Load(const T* const p, uint8_t* destination, uint16_t size) {
     memcpy_P(destination, p, size);
   }
 };

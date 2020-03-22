@@ -1,6 +1,6 @@
-// Copyright 2009 Emilie Gillet.
+// Copyright 2009 Olivier Gillet.
 //
-// Author: Emilie Gillet (emilie.o.gillet@gmail.com)
+// Author: Olivier Gillet (pichenettes@mutable-instruments.net)
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -27,7 +27,7 @@ namespace avrlib {
 volatile LongWord timer0_milliseconds = { 0 };
 uint8_t timer0_fractional = 0;
 
-uint32_t Delay(uint32_t delay) {
+void Delay(uint32_t delay) {
   uint32_t t = milliseconds() + delay;
   while (milliseconds() < t);
 }

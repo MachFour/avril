@@ -1,6 +1,6 @@
-// Copyright 2009 Emilie Gillet.
+// Copyright 2009 Olivier Gillet.
 //
-// Author: Emilie Gillet (emilie.o.gillet@gmail.com)
+// Author: Olivier Gillet (pichenettes@mutable-instruments.net)
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -127,12 +127,12 @@ class Hd44780Lcd {
       }
     }
   }
-  
   static uint8_t WriteData(uint8_t c) {
     if (OutputBuffer::writable() < 2) {
       return 0;
     }
     OutputBuffer::Overwrite2(LCD_DATA | (c >> 4), LCD_DATA | (c & 0xf));
+    return 2;
   }
 
   static uint8_t WriteCommand(uint8_t c) {
@@ -140,13 +140,14 @@ class Hd44780Lcd {
       return 0;
     }
     OutputBuffer::Overwrite2(LCD_COMMAND | (c >> 4), LCD_COMMAND | (c & 0x0f));
+    return 2;
   }
-  
+
   static inline uint8_t Write(uint8_t character) {
-    WriteData(character);
+    return WriteData(character);
   }
-  
-  static inline uint8_t Write(const char* s) {
+
+  static inline void Write(const char* s) {
     while (*s) {
       WriteData(*s);
       ++s;
@@ -156,7 +157,7 @@ class Hd44780Lcd {
   static inline void MoveCursor(uint8_t row, uint8_t col) {
     WriteCommand(LCD_SET_DDRAM_ADDRESS | col | (row << 6));
   }
- 
+
   static inline void SetCustomCharMap(
       const uint8_t* data,
       uint8_t num_characters,
@@ -176,19 +177,19 @@ class Hd44780Lcd {
       SlowData(SimpleResourcesManager::Lookup<uint8_t, uint8_t>(data, i));
     }
   }
-  
+
   static inline void Flush() {
     while (OutputBuffer::readable() || busy()) {
       Tick();
       ConstantDelay(1);
     }
   }
-  
+
   static inline uint8_t writable() { return OutputBuffer::writable(); }
   static inline uint8_t readable() { return OutputBuffer::readable(); }
   static inline uint8_t busy() { return transmitting_; }
   static inline uint8_t status_counter() { return status_counter_; }
-  
+
   static inline void ResetStatusCounter() { status_counter_ = 0; }
 
  private:
@@ -211,12 +212,12 @@ class Hd44780Lcd {
     EndWrite();
     ConstantDelay(3);
   }
-  
+
   static void SlowCommand(uint8_t value) {
     SlowWrite(LCD_COMMAND | (value >> 4));
     SlowWrite(LCD_COMMAND | (value & 0x0f));
   }
-  
+
   static void SlowData(uint8_t value) {
     SlowWrite(LCD_DATA | (value >> 4));
     SlowWrite(LCD_DATA | (value & 0x0f));

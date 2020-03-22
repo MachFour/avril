@@ -1,6 +1,6 @@
-// Copyright 2009 Emilie Gillet.
+// Copyright 2009 Olivier Gillet.
 //
-// Author: Emilie Gillet (emilie.o.gillet@gmail.com)
+// Author: Olivier Gillet (pichenettes@mutable-instruments.net)
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -37,7 +37,7 @@
 
 namespace avrlib {
 
-enum PinMode {
+enum PinMode : uint8_t {
   DIGITAL_INPUT = 0,
   DIGITAL_OUTPUT = 1,
   PWM_OUTPUT = 2
@@ -148,11 +148,7 @@ struct GpioImpl {
     OutputBit::toggle();
   }
   static inline void set_value(uint8_t value) {
-    if (value == 0) {
-      Low();
-    } else {
-      High();
-    }
+    value == 0 ? Low() : High();
   }
   
   static inline void set_pwm_value(uint8_t value) {
@@ -240,7 +236,7 @@ struct NumberedGpioInternal { };
 // Macro to make the pin definitions (template specializations) easier to read.
 #define SetupGpio(n, port, timer, bit) \
 template<> struct NumberedGpioInternal<n> { \
-  typedef GpioImpl<port, timer, bit> Impl; };
+  typedef GpioImpl<port, timer, bit> Impl; }
 
 // Pin definitions for ATmega lineup
 

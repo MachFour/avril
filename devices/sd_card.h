@@ -1,6 +1,6 @@
-// Copyright 2011 Emilie Gillet.
+// Copyright 2011 Olivier Gillet.
 //
-// Author: Emilie Gillet (emilie.o.gillet@gmail.com)
+// Author: Olivier Gillet (pichenettes@mutable-instruments.net)
 // 
 // Inspired by:
 // - The Arduino Sd2Card Library (C) 2009 by William Greiman,
@@ -108,7 +108,7 @@ struct CID {
   unsigned crc7 : 7;
 };
 
-typedef struct CSDv1 {
+struct CSDv1 {
   unsigned reserved1 : 6;
   unsigned csd_ver : 2;
   uint8_t taac;
@@ -152,7 +152,7 @@ typedef struct CSDv1 {
   unsigned crc : 7;
 };
 
-typedef struct CSDv2 {
+struct CSDv2 {
   unsigned reserved1 : 6;
   unsigned csd_ver : 2;
   uint8_t taac;
@@ -398,7 +398,7 @@ class SdCard {
     if (command == SD_CMD_SEND_IF_COND) {
       crc = 0x87;
     }
-    uint8_t status;
+    uint8_t status = 0;
     Spi::Send(crc);
     for (uint8_t i = 0; i < 20; i++) {
       status = Spi::Receive();
@@ -458,7 +458,7 @@ class SdCard {
   
   template<uint16_t timeout>
   static uint8_t WaitForData() {
-    uint8_t status;
+    uint8_t status = 0;
     if (timeout == 0) {
       // Arbitrary timeout that doesn't use the system clock.
       for (uint16_t i = 0; i < 0xffff; ++i) {

@@ -1,6 +1,6 @@
-// Copyright 2009 Emilie Gillet.
+// Copyright 2009 Olivier Gillet.
 //
-// Author: Emilie Gillet (emilie.o.gillet@gmail.com)
+// Author: Olivier Gillet (pichenettes@mutable-instruments.net)
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -20,28 +20,28 @@
 #ifndef AVRLIB_TIME_H_
 #define AVRLIB_TIME_H_
 
-#include <avr/delay.h>
-
 #include "avrlib/base.h"
+
+#include <util/delay.h>
 
 namespace avrlib {
 
 uint32_t milliseconds();
-uint32_t Delay(uint32_t delay);
+void Delay(uint32_t delay);
 
 #define ConstantDelay(x) _delay_ms((x))
 
 void InitClock();
 
-const uint32_t microseconds_per_timer0_overflow =
+constexpr uint32_t microseconds_per_timer0_overflow =
     (64 * 256) / (F_CPU / 1000000L);
-const uint32_t milliseconds_increment =
+constexpr uint32_t milliseconds_increment =
     microseconds_per_timer0_overflow / 1000;
 
-const uint32_t fractional_increment = (
-    microseconds_per_timer0_overflow % 1000) >> 3;
+constexpr uint32_t fractional_increment = (
+    microseconds_per_timer0_overflow % 1000u) >> 3u;
 
-const uint8_t fractional_max = 1000 >> 3;
+constexpr uint8_t fractional_max = 1000u >> 3u;
 
 // The timer count is stored as an union instead of a mere uint32_t because we
 // need access to the individual 16-bit parts of the value.

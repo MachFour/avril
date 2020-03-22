@@ -1,6 +1,6 @@
-// Copyright 2009 Emilie Gillet.
+// Copyright 2009 Olivier Gillet.
 //
-// Author: Emilie Gillet (emilie.o.gillet@gmail.com)
+// Author: Olivier Gillet (pichenettes@mutable-instruments.net)
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -26,6 +26,8 @@
 #include "avrlib/adc.h"
 #include "avrlib/log2.h"
 
+#include <string.h>
+
 namespace avrlib {
 
 template<
@@ -35,8 +37,6 @@ template<
     uint8_t resolution = 7>
 class PotScanner {
  public:
-  PotScanner() { }
-
   static inline void Init() {
     Adc::Init();
     Adc::set_alignment(ADC_LEFT_ALIGNED);
@@ -112,8 +112,9 @@ template<
     uint8_t threshold = 8,
     uint8_t resolution = 10>
 class HysteresisPotScanner {
- public:
-  HysteresisPotScanner() { }
+public:
+
+  HysteresisPotScanner() {}
 
   static inline void Init() {
     Adc::Init();

@@ -1,6 +1,6 @@
-// Copyright 2011 Emilie Gillet.
+// Copyright 2011 Olivier Gillet.
 //
-// Author: Emilie Gillet (emilie.o.gillet@gmail.com)
+// Author: Olivier Gillet (pichenettes@mutable-instruments.net)
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -47,29 +47,28 @@ class EventQueue {
     buffer_size = size,
     data_size = 16,
   };
-  typedef uint16_t Value;
-  typedef EventQueue<size> Me;
-   
-  EventQueue() { }
-  
+  using Value = uint16_t;
+  using Me = EventQueue<size>;
+  using Events = RingBuffer<Me>;
+
   static void Flush() {
-    events_.Flush();
+    Events::Flush();
   };
   
   static void AddEvent(uint8_t control_type, uint8_t id, uint8_t data) {
     Word v;
-    v.bytes[0] = (U8ShiftLeft4(control_type) << 2) | (id & 0x3f);
+    v.bytes[0] = (U8ShiftLeft4(control_type) << 2u) | (id & 0x3fu);
     v.bytes[1] = data;
-    events_.Overwrite(v.value);
+    Events::Overwrite(v.value);
   }
   
   static uint8_t available() {
-    return events_.readable();
+    return Events::readable();
   }
   
   static uint16_t idle_time() {
     uint32_t now = milliseconds();
-    return static_cast<uint16_t>(now - last_event_time_) >> 8;
+    return static_cast<uint16_t>(now - last_event_time_) >> 8u;
   }
   
   static uint16_t idle_time_ms() {
@@ -84,7 +83,7 @@ class EventQueue {
   static Event PullEvent() {
     Event e;
     Word v;
-    v.value = events_.ImmediateRead();
+    v.value = Events::ImmediateRead();
     e.control_type = U8ShiftRight4(v.bytes[0]) >> 2;
     e.control_id = v.bytes[0] & 0x3f;
     e.value = v.bytes[1];
@@ -93,12 +92,11 @@ class EventQueue {
   
  private:
   static uint32_t last_event_time_;
-  static RingBuffer<Me> events_;
 };
 
 /* static */
-template<uint8_t size>
-RingBuffer<EventQueue<size> > EventQueue<size>::events_;
+//template<uint8_t size>
+//RingBuffer<EventQueue<size>> EventQueue<size>::events_;
 
 /* static */
 template<uint8_t size>
