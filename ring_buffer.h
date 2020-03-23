@@ -38,7 +38,7 @@ class RingBuffer : public Input, Output {
     data_size = Owner::data_size
   };
 
-  RingBuffer() { }
+  RingBuffer() = default;
   
   static inline uint8_t capacity() { return size; }
   static inline void Write(Value v) {

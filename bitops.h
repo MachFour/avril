@@ -33,11 +33,19 @@ inline constexpr int16_t S16(T x) {
     return static_cast<int16_t>(x);
 }
 
+template <typename T>
+inline constexpr uint32_t U32(T x) {
+  return static_cast<uint32_t>(x);
+}
+template <typename T>
+inline constexpr int32_t S32(T x) {
+  return static_cast<int32_t>(x);
+}
+
 // returns bit at 8th position (MSB for a byte)
 template <typename T>
 inline constexpr uint8_t MSB8(T x) {
     return U8((x & 0x80u) != 0);
-
 }
 
 // easy way to make uint8_t integer literals
@@ -121,6 +129,10 @@ inline constexpr bool bitTest(uint8_t byte, T bit) {
 template<typename T>
 inline constexpr bool bitTest(uint16_t word, T bit) {
     return (word & bitFlag16(bit)) != 0;
+}
+
+inline constexpr uint16_t word(uint8_t high, uint8_t low) {
+    return U16(high << 8u) | low;
 }
 
 //#define mask1(bit1) bitMask(bit1)

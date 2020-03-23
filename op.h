@@ -267,7 +267,7 @@ static inline uint16_t U8MixU16(uint8_t a, uint8_t b, uint8_t balance) {
 }
 
 static inline uint8_t U8U4MixU8(uint8_t a, uint8_t b, uint8_t balance) {
-  uint16_t sum;
+  uint16_t sum = 0;
   asm(
     "mul %2, %1"      "\n\t"  // b * balance
     "movw %A3, r0"    "\n\t"  // to sum

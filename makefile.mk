@@ -82,7 +82,7 @@ COMPILE_OPTIONS = \
 			-fdata-sections \
 			-ffunction-sections
 WARNING_OPTIONS = -Wall -Wextra -pedantic -Wno-narrowing #-Wno-unused-parameter -Wno-narrowing
-STD = c++14
+STD = c++2a
 
 CPPFLAGS  = -g -Os -std=$(STD) -I. \
 			-mmcu=$(MCU) \
