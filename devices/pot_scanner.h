@@ -113,8 +113,7 @@ template<
     uint8_t resolution = 10>
 class HysteresisPotScanner {
 public:
-
-  HysteresisPotScanner() {}
+  HysteresisPotScanner() = default;
 
   static inline void Init() {
     Adc::Init();

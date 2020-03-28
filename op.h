@@ -193,7 +193,11 @@ static inline uint8_t S16ClipU8(int16_t value) {
 }
 
 static inline int8_t S16ClipS8(int16_t value) {
+<<<<<<< HEAD
   return U8(S16ClipU8(value + 128) + 128);
+=======
+  return static_cast<int8_t>(S16ClipU8(value + 128) + 128);
+>>>>>>> master
 }
 
 static inline uint8_t U8Mix(uint8_t a, uint8_t b, uint8_t balance) {
@@ -750,6 +754,9 @@ static inline int16_t S16U8MulShift8(int16_t a, uint8_t b) {
 }
 static inline int16_t S16S8MulShift8(int16_t a, int8_t b) {
   return (S32(a) * S32(b)) >> 8;
+}
+static inline int16_t S16S8MulShift8(int16_t a, int8_t b) {
+  return (static_cast<int32_t>(a) * static_cast<int32_t>(b)) >> 8;
 }
 
 static inline uint16_t U16U8MulShift8(uint16_t a, uint8_t b) {

@@ -104,7 +104,6 @@ CPPFLAGS  = -g $(OPTIMISATION_LEVEL) -std=$(STD) -I. \
 CXXFLAGS      = -fno-exceptions -fno-non-call-exceptions \
 				-fno-use-cxa-atexit -fno-rtti
 ASFLAGS       = -mmcu=$(MCU) -I. -x assembler-with-cpp
-# TODO Link-time optimisation flags
 LDFLAGS       = -mmcu=$(MCU) -lm -Os -flto -Wl,--relax -Wl,--gc-sections$(EXTRA_LD_FLAGS)
 
 # ------------------------------------------------------------------------------
