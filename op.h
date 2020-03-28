@@ -32,27 +32,11 @@
 namespace avrlib {
 
 template<typename T>
-static inline T Clip(int64_t value, T min, T max) {
+static inline T Clip(uint8_t value, T min, T max) {
   return value < min ? min : (value > max ? max : value);
-}
-template<typename T>
-static inline T Clip(uint64_t value, T min, T max) {
-  return value < min ? min : (value > max ? max : value);
-}
-template<typename T>
-static inline T Clip(int32_t value, T min, T max) {
-  return value < min ? min : (value > max ? max : value);
-}
-template<typename T>
-static inline T Clip(int16_t value, T min, T max) {
-    return value < min ? min : (value > max ? max : value);
 }
 template<typename T>
 static inline T Clip(int8_t value, T min, T max) {
-  return value < min ? min : (value > max ? max : value);
-}
-template<typename T>
-static inline T Clip(uint32_t value, T min, T max) {
   return value < min ? min : (value > max ? max : value);
 }
 template<typename T>
@@ -60,26 +44,40 @@ static inline T Clip(uint16_t value, T min, T max) {
   return value < min ? min : (value > max ? max : value);
 }
 template<typename T>
-static inline T Clip(uint8_t value, T min, T max) {
+static inline T Clip(int16_t value, T min, T max) {
+  return value < min ? min : (value > max ? max : value);
+}
+template<typename T>
+static inline T Clip(int32_t value, T min, T max) {
+  return value < min ? min : (value > max ? max : value);
+}
+template<typename T>
+static inline T Clip(uint32_t value, T min, T max) {
+  return value < min ? min : (value > max ? max : value);
+}
+template<typename T>
+static inline T Clip(int64_t value, T min, T max) {
+  return value < min ? min : (value > max ? max : value);
+}
+template<typename T>
+static inline T Clip(uint64_t value, T min, T max) {
   return value < min ? min : (value > max ? max : value);
 }
 
 static inline int16_t S16ClipU14(int16_t value) {
-  uint8_t msb = lowByte(value);
-  if (msb & 0x80u) {
+  auto msb = highByte(value);
+  if (byteAnd(msb, 0x80)) {
     return 0;
-  } if (msb & 0x40u) {
+  } else if (byteAnd(msb, 0x40)) {
     return 16383;
+  } else {
+    return value;
   }
-  return value;
 }
 
 static inline uint8_t U8AddClip(uint8_t value, uint8_t increment, uint8_t max) {
   value += increment;
-  if (value > max) {
-    value = max;
-  }
-  return value;
+  return value > max ? max : value;
 }
 
 // Correct only if the input is positive.
@@ -195,7 +193,7 @@ static inline uint8_t S16ClipU8(int16_t value) {
 }
 
 static inline int8_t S16ClipS8(int16_t value) {
-  return static_cast<int8_t>(S16ClipU8(value + 128) + 128);
+  return U8(S16ClipU8(value + 128) + 128);
 }
 
 static inline uint8_t U8Mix(uint8_t a, uint8_t b, uint8_t balance) {
@@ -215,9 +213,7 @@ static inline uint8_t U8Mix(uint8_t a, uint8_t b, uint8_t balance) {
   return sum.bytes[1];
 }
 
-static inline uint8_t U8Mix(
-    uint8_t a, uint8_t b,
-    uint8_t gain_a, uint8_t gain_b) {
+static inline uint8_t U8Mix(uint8_t a, uint8_t b, uint8_t gain_a, uint8_t gain_b) {
   Word sum;
   asm(
     "mul %3, %4"      "\n\t"  // b * gain_b
@@ -232,9 +228,7 @@ static inline uint8_t U8Mix(
   return sum.bytes[1];
 }
 
-static inline int8_t S8Mix(
-    int8_t a, int8_t b,
-    uint8_t gain_a, uint8_t gain_b) {
+static inline int8_t S8Mix(int8_t a, int8_t b, uint8_t gain_a, uint8_t gain_b) {
   Word sum;
   asm(
     "mulsu %3, %4"    "\n\t"  // b * gain_b
@@ -309,6 +303,7 @@ static inline uint16_t U8U4MixU12(uint8_t a, uint8_t b, uint8_t balance) {
   return sum;
 }
 
+__attribute__((always_inline))
 static inline uint8_t U8ShiftLeft4(uint8_t a) {
   uint8_t result;
   asm(
@@ -321,6 +316,7 @@ static inline uint8_t U8ShiftLeft4(uint8_t a) {
   return result;
 }
 
+__attribute__((always_inline))
 static inline uint8_t U8Swap4(uint8_t a) {
   uint8_t result;
   asm(
@@ -332,6 +328,7 @@ static inline uint8_t U8Swap4(uint8_t a) {
   return result;
 }
 
+__attribute__((always_inline))
 static inline uint8_t U8ShiftRight4(uint8_t a) {
   uint8_t result;
   asm(
@@ -362,7 +359,7 @@ static inline uint16_t U16ShiftRight4(uint16_t a) {
   return result;
 }
 
-
+__attribute__((always_inline))
 static inline uint8_t U8U8MulShift8(uint8_t a, uint8_t b) {
   uint8_t result;
   asm(
@@ -453,6 +450,7 @@ static inline uint8_t U14ShiftRight6(uint16_t value) {
   return result;
 }
 
+__attribute__((always_inline))
 static inline uint8_t U15ShiftRight7(uint16_t value) {
   uint8_t b = highByte(value);
   uint8_t a = lowByte(value);
@@ -594,32 +592,32 @@ static inline uint8_t InterpolateSample(const uint8_t * table, uint16_t phase) {
 #else
 
 static inline uint24c_t U24AddC(uint24c_t a, uint24_t b) {
-  uint24c_t result;
-  
-  uint32_t av = static_cast<uint32_t>(a.integral) << 8;
+  uint24c_t result {};
+
+  uint32_t av = U32(a.integral) << 8u;
   av += a.fractional;
-  
-  uint32_t bv = static_cast<uint32_t>(b.integral) << 8;
+
+  uint32_t bv = U32(b.integral) << 8u;
   bv += b.fractional;
   
   uint32_t sum = av + bv;
-  result.integral = sum >> 8;
-  result.fractional = sum & 0xff;
+  result.integral = sum >> 8u;
+  result.fractional = sum & 0xffu;
   result.carry = (sum & 0xff000000) != 0;
   return result;
 }
 
 static inline uint24_t U24Add(uint24_t a, uint24_t b) {
-  uint24_t result;
+  uint24_t result {};
   
-  uint32_t av = static_cast<uint32_t>(a.integral) << 8;
+  uint32_t av = U32(a.integral) << 8;
   av += a.fractional;
   
-  uint32_t bv = static_cast<uint32_t>(b.integral) << 8;
+  uint32_t bv = U32(b.integral) << 8;
   bv += b.fractional;
   
   uint32_t sum = av + bv;
-  result.integral = sum >> 8;
+  result.integral = sum >> 8u;
   result.fractional = sum & 0xff;
   return result;
 }
@@ -627,35 +625,35 @@ static inline uint24_t U24Add(uint24_t a, uint24_t b) {
 static inline uint24_t U24Sub(uint24_t a, uint24_t b) {
   uint24_t result;
   
-  uint32_t av = static_cast<uint32_t>(a.integral) << 8;
+  uint32_t av = U32(a.integral) << 8;
   av += a.fractional;
   
-  uint32_t bv = static_cast<uint32_t>(b.integral) << 8;
+  uint32_t bv = U32(b.integral) << 8;
   bv += b.fractional;
   
   uint32_t difference = av - bv;
-  result.integral = difference >> 8;
-  result.fractional = difference & 0xff;
+  result.integral = difference >> 8u;
+  result.fractional = difference & 0xffu;
   return result;
 }
 
 static inline uint24_t U24ShiftRight(uint24_t a) {
-  uint24_t result;
-  uint32_t av = static_cast<uint32_t>(a.integral) << 8;
+  uint24_t result {};
+  uint32_t av = U32(a.integral) << 8u;
   av += a.fractional;
-  av >>= 1;
-  result.integral = av >> 8;
-  result.fractional = av & 0xff;
+  av >>= 1u;
+  result.integral = av >> 8u;
+  result.fractional = av & 0xffu;
   return result;
 }
 
 static inline uint24_t U24ShiftLeft(uint24_t a) {
-  uint24_t result;
-  uint32_t av = static_cast<uint32_t>(a.integral) << 8;
+  uint24_t result {};
+  uint32_t av = U32(a.integral) << 8u;
   av += a.fractional;
-  av <<= 1;
-  result.integral = av >> 8;
-  result.fractional = av & 0xff;
+  av <<= 1u;
+  result.integral = av >> 8u;
+  result.fractional = av & 0xffu;
   return result;
 }
 
@@ -700,15 +698,15 @@ static inline uint8_t U8ShiftLeft4(uint8_t a) {
 }
 
 static inline uint8_t U8Swap4(uint8_t a) {
-  return (a << 4) | (a >> 4);
+  return (a << 4u) | (a >> 4u);
 }
 
 static inline uint8_t U8U8MulShift8(uint8_t a, uint8_t b) {
-  return a * b >> 8;
+  return (a * b) >> 8u;
 }
 
 static inline int8_t S8U8MulShift8(int8_t a, uint8_t b) {
-  return a * b >> 8;
+  return S16(a * b) >> 8u;
 }
 
 static inline int16_t S8U8Mul(int8_t a, uint8_t b) {
@@ -724,38 +722,38 @@ static inline uint16_t U8U8Mul(uint8_t a, uint8_t b) {
 }
 
 static inline int8_t S8S8MulShift8(int8_t a, int8_t b) {
-  return a * b >> 8;
+  return S16(a * b) >> 8u;
 }
 
 static inline uint16_t Mul16Scale8(uint16_t a, uint16_t b) {
-  return static_cast<uint32_t>(a) * b >> 8;
+  return U32(a) * b >> 8u;
 }
 
 static inline uint8_t U14ShiftRight6(uint16_t value) {
-  return value >> 6;
+  return value >> 6u;
 }
 
 static inline uint8_t U15ShiftRight7(uint16_t value) {
-  return value >> 7;
+  return value >> 7u;
 }
 
 static inline uint16_t U16ShiftRight4(uint16_t a) {
-  return a >> 4;
+  return a >> 4u;
 }
 
 static inline int16_t S16U16MulShift16(int16_t a, uint16_t b) {
-  return (static_cast<int32_t>(a) * static_cast<uint32_t>(b)) >> 16;
+  return (S32(a) * U32(b)) >> 16u;
 }
 
 static inline int16_t S16U8MulShift8(int16_t a, uint8_t b) {
-  return (static_cast<int32_t>(a) * static_cast<uint32_t>(b)) >> 8;
+  return (S32(a) * U32(b)) >> 8;
 }
 static inline int16_t S16S8MulShift8(int16_t a, int8_t b) {
-  return (static_cast<int32_t>(a) * static_cast<int32_t>(b)) >> 8;
+  return (S32(a) * S32(b)) >> 8;
 }
 
 static inline uint16_t U16U8MulShift8(uint16_t a, uint8_t b) {
-  return (static_cast<uint32_t>(a) * static_cast<uint32_t>(b)) >> 8;
+  return (S32(a) * S32(b)) >> 8;
 }
 
 //for bytes in program memory

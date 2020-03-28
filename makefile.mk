@@ -70,9 +70,8 @@ AVRDUDE        = $(AVRLIB_TOOLS_PATH)avrdude
 REMOVE         = rm -f
 CAT            = cat
 
-#TODO nostdlib
-
-COMPILE_OPTIONS = \
+OPTIMISATION_LEVEL ?= -Os
+COMPILE_FLAGS = \
 			-ffreestanding \
 			-fno-common \
 			-fshort-enums \
@@ -80,28 +79,33 @@ COMPILE_OPTIONS = \
 			-nostdlib \
 			-fverbose-asm \
 			-fdata-sections \
-			-ffunction-sections
-WARNING_OPTIONS = -Wall -Wextra -pedantic -Wno-narrowing #-Wno-unused-parameter -Wno-narrowing
+			-ffunction-sections \
+			-flto \
+			-mrelax
+# optional extra flags.
+# -mcall-prologues may cause code to be slower as registers are saved and popped
+EXTRA_FLAGS ?= -mcall-prologues
+
+WARNING_FLAGS = -Wall -Wextra -pedantic -Wno-narrowing #-Wno-unused-parameter
 STD = c++2a
 
-CPPFLAGS  = -g -Os -std=$(STD) -I. \
+CPPFLAGS  = -g $(OPTIMISATION_LEVEL) -std=$(STD) -I. \
 			-mmcu=$(MCU) \
-			$(WARNING_OPTIONS) \
-			$(COMPILE_OPTIONS) \
+			$(WARNING_FLAGS) \
+			$(COMPILE_FLAGS) \
+			$(EXTRA_FLAGS) \
 			-DF_CPU=$(F_CPU) \
 			$(EXTRA_DEFINES) \
 			$(MMC_CONFIG) \
 			-D$(MCU_DEFINE) \
 			-DSERIAL_RX_0 \
-			-mcall-prologues \
-			-mrelax
 			#-Wsign-conversion -Wconversion
 # these are from https://bitbashing.io/embedded-cpp.html
 CXXFLAGS      = -fno-exceptions -fno-non-call-exceptions \
 				-fno-use-cxa-atexit -fno-rtti
 ASFLAGS       = -mmcu=$(MCU) -I. -x assembler-with-cpp
 # TODO Link-time optimisation flags
-LDFLAGS       = -mmcu=$(MCU) -lm -Os -Wl,--relax -Wl,--gc-sections$(EXTRA_LD_FLAGS) \
+LDFLAGS       = -mmcu=$(MCU) -lm -Os -flto -Wl,--relax -Wl,--gc-sections$(EXTRA_LD_FLAGS)
 
 # ------------------------------------------------------------------------------
 # Source compiling

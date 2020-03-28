@@ -59,6 +59,9 @@ inline constexpr uint16_t operator "" _u16(unsigned long long arg) noexcept {
 }
 
 
+// The outermost casts aren't technically needed in these functions,
+// due to the implicit casting to the return type, but they show the intent.
+
 inline constexpr uint8_t highByte(uint16_t w) {
     return U8(w >> 8u);
 }
@@ -71,6 +74,23 @@ inline constexpr uint8_t lowByte(uint16_t w) {
 inline constexpr uint8_t lowByte(int16_t w) {
     return U8(w);
 }
+inline constexpr int16_t highWord(int32_t i) {
+    return S16(U32(i) >> 16u);
+}
+inline constexpr uint16_t highWord(uint32_t i) {
+  return U32(i) >> 16u;
+}
+
+inline constexpr uint16_t word(uint8_t high, uint8_t low) {
+  return U16(high << 8u) | low;
+}
+
+inline constexpr uint32_t FourCC(uint8_t a, uint8_t b, uint8_t c, uint8_t d) {
+  return (U32(word(a, b)) << 16u) | word(c, d);
+}
+
+
+
 
 template<typename S, typename T>
 inline constexpr uint8_t byteOr(S b1, T b2) {
@@ -81,6 +101,18 @@ template<typename S, typename T>
 inline constexpr uint8_t byteAnd(S b1, T b2) {
     return U8(U8(b1) & U8(b2));
 }
+
+template<typename S, typename T>
+inline constexpr uint16_t wordOr(S w1, T w2) {
+  return U16(w1) | U16(w2);
+}
+
+template<typename S, typename T>
+inline constexpr uint16_t wordAnd(S w1, T w2) {
+  return U16(w1) & U16(w2);
+}
+
+
 
 template<typename S, typename T, typename U>
 inline constexpr uint8_t byteOr(S b1, T b2, U b3) {
@@ -129,10 +161,6 @@ inline constexpr bool bitTest(uint8_t byte, T bit) {
 template<typename T>
 inline constexpr bool bitTest(uint16_t word, T bit) {
     return (word & bitFlag16(bit)) != 0;
-}
-
-inline constexpr uint16_t word(uint8_t high, uint8_t low) {
-    return U16(high << 8u) | low;
 }
 
 //#define mask1(bit1) bitMask(bit1)

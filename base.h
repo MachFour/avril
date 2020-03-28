@@ -20,22 +20,22 @@
 #ifndef AVRLIB_BASE_H_
 #define AVRLIB_BASE_H_
 
-#include <inttypes.h>
+#include <stdint.h>
 
 #ifndef NULL
 #define NULL 0
 #endif
 
-typedef union {
+union Word {
   uint16_t value;
   uint8_t bytes[2];
-} Word;
+};
 
-typedef union {
+union LongWord {
   uint32_t value;
   uint16_t words[2];
   uint8_t bytes[4];
-} LongWord;
+};
 
 struct uint24_t {
   uint16_t integral;
@@ -48,11 +48,6 @@ struct uint24c_t {
   uint8_t fractional;
 };
 
-
-template<uint32_t a, uint32_t b, uint32_t c, uint32_t d>
-struct FourCC {
-  static const uint32_t value = (((((d << 8) | c) << 8) | b) << 8) | a;
-};
 
 #define DISALLOW_COPY_AND_ASSIGN(TypeName) \
   TypeName(const TypeName&);               \

@@ -21,6 +21,7 @@
 #define AVRLIB_RANDOM_H_
 
 #include "avrlib/base.h"
+#include "bitops.h"
 
 namespace avrlib {
 
@@ -29,7 +30,7 @@ class Random {
   static void Update() {
     // Galois LFSR with feedback polynomial = x^16 + x^14 + x^13 + x^11.
     // Period: 65535.
-    rng_state_ = (rng_state_ >> 1) ^ (-(rng_state_ & 1) & 0xb400);
+    rng_state_ = S16(U16(rng_state_ >> 1u) ^ wordAnd(-S16(wordAnd(rng_state_, 1)), 0xb400));
   }
 
   static inline uint16_t state() { return rng_state_; }
@@ -39,7 +40,7 @@ class Random {
   }
 
   static inline uint8_t state_msb() {
-    return static_cast<uint8_t>(rng_state_ >> 8);
+    return highByte(rng_state_);
   }
 
   static inline uint8_t GetByte() {

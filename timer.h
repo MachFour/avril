@@ -202,11 +202,11 @@ struct PwmChannel {
   }
   static inline void set_frequency(uint16_t f) {
     OCR1A = f;
-    OCR1B = f >> 1;
+    OCR1B = f / 2u;
   }
   static inline void set_frequency_pulse(uint16_t f) {
     OCR1A = f;
-    OCR1B = f - (f >> 2);
+    OCR1B = f - (f / 4u);
   }
 };
 

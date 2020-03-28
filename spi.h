@@ -188,16 +188,10 @@ class SpiSlave {
   }
 };
 
-template<typename XckPort,
-         typename TxPort,
-         typename RxPort,
-         typename PrescalerRegister,
-         typename ControlRegisterB,
-         uint8_t BFlags,
-         typename ControlRegisterC,
-         uint8_t CFlags,
-         typename TxReadyBit,
-         typename DataRegister>
+template<typename XckPort, typename TxPort, typename RxPort, typename PrescalerRegister,
+         typename ControlRegisterB, uint8_t BFlags,
+         typename ControlRegisterC, uint8_t CFlags,
+         typename TxReadyBit, typename DataRegister>
 struct UartSpiPort {
   static inline uint8_t tx_ready() { return TxReadyBit::value(); }
   static inline uint8_t data() { return *DataRegister::ptr(); }
@@ -215,33 +209,19 @@ struct UartSpiPort {
 
 #ifdef HAS_USART0
 
-typedef UartSpiPort<
-    UartSpi0XCK,
-    UartSpi0TX,
-    UartSpi0RX,
-    UBRR0Register,
-    UCSR0BRegister,
-    _BV(RXEN0) | _BV(TXEN0),
-    UCSR0CRegister,
-    _BV(UMSEL01) | _BV(UMSEL00),
-    BitInRegister<UCSR0ARegister, UDRE0>,
-    UDR0Register> UartSpiPort0;
+typedef UartSpiPort<UartSpi0XCK, UartSpi0TX, UartSpi0RX, UBRR0Register,
+    UCSR0BRegister, _BV(RXEN0) | _BV(TXEN0),
+    UCSR0CRegister, _BV(UMSEL01) | _BV(UMSEL00),
+    BitInRegister<UCSR0ARegister, UDRE0>, UDR0Register> UartSpiPort0;
 
 #endif  // HAS_USART0
 
 #ifdef HAS_USART1
 
-typedef UartSpiPort<
-    UartSpi1XCK,
-    UartSpi1TX,
-    UartSpi1RX,
-    UBRR1Register,
-    UCSR1BRegister,
-    _BV(RXEN1) | _BV(TXEN1),
-    UCSR1CRegister,
-    _BV(UMSEL11) | _BV(UMSEL10),
-    BitInRegister<UCSR1ARegister, UDRE1>,
-    UDR1Register> UartSpiPort1;
+typedef UartSpiPort< UartSpi1XCK, UartSpi1TX, UartSpi1RX, UBRR1Register
+    UCSR1BRegister, _BV(RXEN1) | _BV(TXEN1),
+    UCSR1CRegister, _BV(UMSEL11) | _BV(UMSEL10),
+    BitInRegister<UCSR1ARegister, UDRE1>, UDR1Register> UartSpiPort1;
 
 #endif  // HAS_USART1
 
@@ -254,45 +234,54 @@ class UartSpiMaster {
   };
 
   static void Init() {
-    SlaveSelect::set_mode(DIGITAL_OUTPUT);
-    SlaveSelect::High();
+    SlaveSelect::outputMode();
+    SlaveSelect::high();
     Port::Setup((speed / 2) - 1);
   }
 
+  __attribute__((always_inline))
   static inline void Begin() {
-    SlaveSelect::Low();
+    SlaveSelect::low();
   }
 
+  __attribute__((always_inline))
   static inline void End() {
-    SlaveSelect::High();
-  }
-  
-  static inline void Strobe() {
-    SlaveSelect::High();
-    SlaveSelect::Low();
+    SlaveSelect::high();
   }
 
+  __attribute__((always_inline))
+  static inline void Strobe() {
+    SlaveSelect::high();
+    SlaveSelect::low();
+  }
+
+  __attribute__((always_inline))
   static inline void Write(uint8_t v) {
     Begin();
     Send(v);
     End();
   }
-  
+
+  __attribute__((always_inline))
   static inline void Send(uint8_t v) {
     Overwrite(v);
     Wait();
   }
 
+  __attribute__((always_inline))
   static inline void Wait() {
     while (!Port::tx_ready());
   }
-  
+
+  __attribute__((always_inline))
   static inline void OptimisticWait() { }
-  
+
+  __attribute__((always_inline))
   static inline void Overwrite(uint8_t v) {
     Port::set_data(v);
   }
-  
+
+  __attribute__((always_inline))
   static inline void WriteWord(uint8_t a, uint8_t b) {
     Begin();
     Send(a);

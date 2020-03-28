@@ -84,6 +84,49 @@ struct BitInRegister {
   }
 };
 
+// A new method?
+
+#define IO8Port(port) \
+template<uint8_t bit> \
+  struct Port##port##Pin { \
+    static constexpr uint8_t bitFlag = staticBitFlag(bit); \
+    __attribute__((always_inline)) \
+    static inline void outputMode() { \
+      DDR##port |= bitFlag; \
+    } \
+    __attribute__((always_inline)) \
+    static inline void inputMode() { \
+      DDR##port &= byteInverse(bitFlag); \
+    } \
+    __attribute__((always_inline)) \
+    static inline void high() { \
+      PORT##port |= bitFlag; \
+    } \
+    __attribute__((always_inline)) \
+    static inline void low() { \
+      PORT##port &= byteInverse(bitFlag); \
+    } \
+    __attribute__((always_inline)) \
+    static inline void toggle() { \
+      PIN##port |= bitFlag; \
+    } \
+    __attribute__((always_inline)) \
+    static inline uint8_t read() { \
+      return (PORT##port & bitFlag) != 0; \
+    } \
+    static inline uint8_t isHigh() { \
+      return read(); \
+    } \
+    static inline uint8_t isLow() { \
+      return !read(); \
+    } \
+  }
+
+IO8Port(B);
+IO8Port(C);
+IO8Port(D);
+
+
 // These classes implement/define the basic input/output interface. The default
 // implementation is that of an infinite stream of incoming/outgoing 0s.
 struct Input {

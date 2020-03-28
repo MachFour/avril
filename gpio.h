@@ -174,10 +174,18 @@ struct GpioImpl {
 template<typename port, uint8_t bit>
 struct Gpio {
   typedef GpioImpl<port, NoPwmChannel, bit> Impl;
+  __attribute__((always_inline))
   static void High() { Impl::High(); }
+
+  __attribute__((always_inline))
   static void Low() { Impl::Low(); }
+
+  __attribute__((always_inline))
   static void Toggle() { Impl::Toggle(); }
+
+  __attribute__((always_inline))
   static void set_mode(uint8_t mode) { Impl::set_mode(mode); }
+
   static void set_value(uint8_t value) { Impl::set_value(value); }
   static void set_pwm_value(uint8_t value) { Impl::set_pwm_value(value); }
   static uint8_t value() { return Impl::value(); }
