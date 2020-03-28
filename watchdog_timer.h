@@ -33,7 +33,7 @@ inline void SystemReset(uint8_t interval) {
 }
 
 inline void ResetWatchdog() {
-  uint8_t watchdog_status = MCUSR;
+  //uint8_t watchdog_status = MCUSR;
   MCUSR = 0;
   WDTCSR |= _BV(WDCE) | _BV(WDE);
   WDTCSR = 0;

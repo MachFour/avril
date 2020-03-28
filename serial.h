@@ -147,6 +147,8 @@ struct SerialOutput : public Output {
     if (v >= 0) {
       Overwrite(v);
     }
+    // TODO not sure what to return here
+    return v;
   }
 };
 

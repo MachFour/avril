@@ -23,21 +23,52 @@
 
 #define USE_OPTIMIZED_OP
 
-#include <avr/pgmspace.h>
 
 #include "avrlib/base.h"
+#include "avrlib/bitops.h"
+
+#include <avr/pgmspace.h>
 
 namespace avrlib {
 
-static inline int16_t Clip(int16_t value, int16_t min, int16_t max) {
+template<typename T>
+static inline T Clip(int64_t value, T min, T max) {
+  return value < min ? min : (value > max ? max : value);
+}
+template<typename T>
+static inline T Clip(uint64_t value, T min, T max) {
+  return value < min ? min : (value > max ? max : value);
+}
+template<typename T>
+static inline T Clip(int32_t value, T min, T max) {
+  return value < min ? min : (value > max ? max : value);
+}
+template<typename T>
+static inline T Clip(int16_t value, T min, T max) {
+    return value < min ? min : (value > max ? max : value);
+}
+template<typename T>
+static inline T Clip(int8_t value, T min, T max) {
+  return value < min ? min : (value > max ? max : value);
+}
+template<typename T>
+static inline T Clip(uint32_t value, T min, T max) {
+  return value < min ? min : (value > max ? max : value);
+}
+template<typename T>
+static inline T Clip(uint16_t value, T min, T max) {
+  return value < min ? min : (value > max ? max : value);
+}
+template<typename T>
+static inline T Clip(uint8_t value, T min, T max) {
   return value < min ? min : (value > max ? max : value);
 }
 
 static inline int16_t S16ClipU14(int16_t value) {
-  uint8_t msb = static_cast<uint16_t>(value) >> 8;
-  if (msb & 0x80) {
+  uint8_t msb = lowByte(value);
+  if (msb & 0x80u) {
     return 0;
-  } if (msb & 0x40) {
+  } if (msb & 0x40u) {
     return 16383;
   }
   return value;
@@ -53,7 +84,7 @@ static inline uint8_t U8AddClip(uint8_t value, uint8_t increment, uint8_t max) {
 
 // Correct only if the input is positive.
 static inline uint8_t S16ShiftRight8(int16_t value) {
-  return static_cast<uint16_t>(value) >> 8;
+  return lowByte(value);
 }
 
 #ifdef USE_OPTIMIZED_OP
@@ -164,7 +195,7 @@ static inline uint8_t S16ClipU8(int16_t value) {
 }
 
 static inline int8_t S16ClipS8(int16_t value) {
-  return S16ClipU8(value + 128) + 128;
+  return static_cast<int8_t>(S16ClipU8(value + 128) + 128);
 }
 
 static inline uint8_t U8Mix(uint8_t a, uint8_t b, uint8_t balance) {
@@ -178,7 +209,7 @@ static inline uint8_t U8Mix(uint8_t a, uint8_t b, uint8_t balance) {
     "add %A0, r0"     "\n\t"  // add to sum L
     "adc %B0, r1"     "\n\t"  // add to sum H
     "eor r1, r1"      "\n\t"  // reset r1 after multiplication
-    : "&=r" (sum)
+    : "=&r" (sum)
     : "a" (a), "a" (balance), "a" (b)
     );
   return sum.bytes[1];
@@ -195,7 +226,7 @@ static inline uint8_t U8Mix(
     "add %A0, r0"     "\n\t"  // add to sum L
     "adc %B0, r1"     "\n\t"  // add to sum H
     "eor r1, r1"      "\n\t"  // reset r1 after multiplication
-    : "&=r" (sum)
+    : "=&r" (sum)
     : "a" (a), "a" (gain_a), "a" (b), "a" (gain_b)
     );
   return sum.bytes[1];
@@ -212,7 +243,7 @@ static inline int8_t S8Mix(
     "add %A0, r0"     "\n\t"  // add to sum L
     "adc %B0, r1"     "\n\t"  // add to sum H
     "eor r1, r1"      "\n\t"  // reset r1 after multiplication
-    : "&=r" (sum)
+    : "=&r" (sum)
     : "a" (a), "a" (gain_a), "a" (b), "a" (gain_b)
     );
   return sum.bytes[1];
@@ -229,7 +260,7 @@ static inline uint16_t U8MixU16(uint8_t a, uint8_t b, uint8_t balance) {
     "add %A0, r0"     "\n\t"  // add to sum L
     "adc %B0, r1"     "\n\t"  // add to sum H
     "eor r1, r1"      "\n\t"  // reset r1 after multiplication
-    : "&=r" (sum)
+    : "=&r" (sum)
     : "a" (a), "a" (balance), "a" (b)
     );
   return sum.value;
@@ -272,7 +303,7 @@ static inline uint16_t U8U4MixU12(uint8_t a, uint8_t b, uint8_t balance) {
     "add %A0, r0"     "\n\t"  // add to sum L
     "adc %B0, r1"     "\n\t"  // add to sum H
     "eor r1, r1"      "\n\t"  // reset r1 after multiplication
-    : "&=r" (sum)
+    : "=&r" (sum)
     : "a" (a), "a" (balance), "a" (b)
     );
   return sum;
@@ -408,8 +439,8 @@ static inline int8_t S8S8MulShift8(int8_t a, int8_t b) {
 // a couple of cycles. Note that this solution only works for operands with
 // a 14-bits resolution.
 static inline uint8_t U14ShiftRight6(uint16_t value) {
-  uint8_t b = value >> 8;
-  uint8_t a = value & 0xff;
+  uint8_t b = highByte(value);
+  uint8_t a = lowByte(value);
   uint8_t result;
   asm(
     "add %1, %1"       "\n\t"
@@ -423,8 +454,8 @@ static inline uint8_t U14ShiftRight6(uint16_t value) {
 }
 
 static inline uint8_t U15ShiftRight7(uint16_t value) {
-  uint8_t b = value >> 8;
-  uint8_t a = value & 0xff;
+  uint8_t b = highByte(value);
+  uint8_t a = lowByte(value);
   uint8_t result;
   asm(
     "add %1, %1"       "\n\t"
@@ -534,13 +565,8 @@ static inline int16_t S16S8MulShift8(int16_t a, int8_t b) {
   return result;
 }
 
-static inline uint8_t InterpolateSample(
-    const prog_uint8_t* table,
-    uint16_t phase) __attribute__((always_inline));
-
-static inline uint8_t InterpolateSample(
-    const prog_uint8_t* table,
-    uint16_t phase) {
+// for table in program memory
+static inline uint8_t InterpolateSample(const uint8_t * table, uint16_t phase) {
   uint8_t result;
   uint8_t work;
   asm(
@@ -608,8 +634,8 @@ static inline uint24_t U24Sub(uint24_t a, uint24_t b) {
   bv += b.fractional;
   
   uint32_t difference = av - bv;
-  result.integral = sum >> 8;
-  result.fractional = sum & 0xff;
+  result.integral = difference >> 8;
+  result.fractional = difference & 0xff;
   return result;
 }
 
@@ -642,17 +668,15 @@ static inline int8_t S16ClipS8(int16_t value) {
 }
 
 static inline uint8_t U8Mix(uint8_t a, uint8_t b, uint8_t balance) {
-  return a * (255 - balance) + b * balance >> 8;
+  return (a * (255 - balance) + b * balance) >> 8;
 }
 
 static inline uint8_t U8Mix(uint8_t a, uint8_t b, uint8_t gain_a, uint8_t gain_b) {
-  return a * gain_a + b * gain_b >> 8;
+  return (a * gain_a + b * gain_b) >> 8;
 }
 
-static inline int8_t S8Mix(
-    int8_t a, int8_t b,
-    uint8_t gain_a, uint8_t gain_b) {
-  return a * gain_a + b * gain_b >> 8;
+static inline int8_t S8Mix(int8_t a, int8_t b, uint8_t gain_a, uint8_t gain_b) {
+  return (a * gain_a + b * gain_b) >> 8;
 }
 
 static inline uint16_t U8MixU16(uint8_t a, uint8_t b, uint8_t balance) {
@@ -726,14 +750,16 @@ static inline int16_t S16U16MulShift16(int16_t a, uint16_t b) {
 static inline int16_t S16U8MulShift8(int16_t a, uint8_t b) {
   return (static_cast<int32_t>(a) * static_cast<uint32_t>(b)) >> 8;
 }
+static inline int16_t S16S8MulShift8(int16_t a, int8_t b) {
+  return (static_cast<int32_t>(a) * static_cast<int32_t>(b)) >> 8;
+}
 
 static inline uint16_t U16U8MulShift8(uint16_t a, uint8_t b) {
   return (static_cast<uint32_t>(a) * static_cast<uint32_t>(b)) >> 8;
 }
 
-static inline uint8_t InterpolateSample(
-    const prog_uint8_t* table,
-    uint16_t phase) {
+//for bytes in program memory
+static inline uint8_t InterpolateSample(const uint8_t * table, uint16_t phase) {
   return U8Mix(
       pgm_read_byte(table + (phase >> 8)),
       pgm_read_byte(1 + table + (phase >> 8)),

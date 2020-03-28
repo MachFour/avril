@@ -15,23 +15,25 @@
 //
 // -----------------------------------------------------------------------------
 //
-// In-memory text page with on-demand copy to LCD display.
+// In-memory text page with on-demand copy to LCD Display.
 //
 // Instead of queuing text drawing instruction in the LCD buffer (BAD), this
 // uses 2 text buffers, one containing the current status of the LCD, and one
 // containing the requested text page. The 2 buffer are compared in a background
-// process and differences are sent to the LCD display. This also manages a
+// process and differences are sent to the LCD Display. This also manages a
 // software blinking cursor.
 
 #ifndef AVRLIB_DEVICES_BUFFERED_DISPLAY_H_
 #define AVRLIB_DEVICES_BUFFERED_DISPLAY_H_
 
-#include <string.h>
 
 #include "avrlib/base.h"
 #include "avrlib/log2.h"
 #include "avrlib/op.h"
+#include "avrlib/bitops.h"
 #include "avrlib/time.h"
+
+#include <string.h>
 
 namespace avrlib {
 
@@ -48,8 +50,6 @@ class BufferedDisplay {
     lcd_buffer_size = width * height,
   };
 
-  BufferedDisplay() { }
-
   static void Init() {
     Clear();
     memset(remote_, '?', lcd_buffer_size);
@@ -60,10 +60,10 @@ class BufferedDisplay {
     cursor_position_ = 255;
     blink_ = 0;
   }
-  
+
+  // ensure line < height!
   static char* line_buffer(uint8_t line) {
-    return static_cast<char*>(
-        static_cast<void*>(local_ + U8U8Mul(line, width)));
+    return local_ + U8U8Mul(line, width);
   }
 
   static void Print(uint8_t line, const char* text) {
@@ -75,7 +75,7 @@ class BufferedDisplay {
       --row;
     }
   }
-  
+
   static void Clear() {
     memset(local_, ' ', lcd_buffer_size);
   }
@@ -88,30 +88,30 @@ class BufferedDisplay {
   static inline void set_cursor_character(uint8_t character) {
     cursor_character_ = character;
   }
-  
+
   static inline uint8_t cursor_position() {
     return cursor_position_;
   }
 
   static inline void set_status(uint8_t status) {
-    status_ = status + 1;
+    status_ = status + 1_u8;
     Lcd::ResetStatusCounter();
     previous_status_counter_ = 0;
   }
-  
+
   static inline void ForceStatus(uint8_t status) {
     if (Lcd::writable() < 4) {
       return;
     }
-    status_ = status + 1;
+    status_ = status + 1_u8;
     scan_position_ = 0;
     scan_row_ = 0;
     scan_column_ = 0;
     Lcd::MoveCursor(scan_row_, scan_column_);
-    Lcd::WriteData(status_ - 1);
-    remote_[scan_position_] = status_ - 1;
+    Lcd::WriteData(status_ - 1_u8);
+    remote_[scan_position_] = status_ - 1_u8;
   }
-  
+
   static void BlinkCursor() {
     ++blink_;
   }
@@ -123,9 +123,9 @@ class BufferedDisplay {
     if (Lcd::writable() < 4) {
       return;
     }
-    // It is now safe to assume that all writes of 4 bytes to the display buffer
+    // It is now safe to assume that all writes of 4 bytes to the Display buffer
     // will not block.
-    
+
     if (previous_status_counter_ > Lcd::status_counter()) {
       status_ = 0;
     }
@@ -135,15 +135,15 @@ class BufferedDisplay {
     // Determine which character to show at the current position.
     // If the scan position is the cursor and it is shown (blinking), draw the
     // cursor.
-    if (scan_position_ == cursor_position_ && (blink_ & 128)) {
+    if (scan_position_ == cursor_position_ && byteAnd(blink_, 128)) {
       character = cursor_character_;
     } else {
-      // Otherwise, check if there's a status indicator to display. It is
+      // Otherwise, check if there's a status indicator to Display. It is
       // displayed either on the left or right of the first line, depending on
       // the available space.
       if (status_ && (scan_position_ == 0 || scan_position_ == (width - 1)) &&
           local_[scan_position_] == ' ') {
-        character = status_ - 1;
+        character = status_ - 1u;
       } else {
         character = local_[scan_position_];
       }
@@ -163,7 +163,7 @@ class BufferedDisplay {
         Lcd::MoveCursor(scan_row_, scan_column_);
         Lcd::WriteData(character);
       }
-      // We can now assume that the remote display will be updated.
+      // We can now assume that the remote Display will be updated.
       remote_[scan_position_] = character;
       scan_position_last_write_ = scan_position_;
     }
@@ -180,10 +180,10 @@ class BufferedDisplay {
   }
 
  private:
-  // Character pages storing what the display currently shows (remote), and
+  // Character pages storing what the Display currently shows (remote), and
   // what it ought to show (local).
-  static uint8_t local_[width * height + 1];
-  static uint8_t remote_[width * height];
+  static char local_[width * height + 1];
+  static char remote_[width * height];
 
   // Position of the last character being transmitted.
   static uint8_t scan_position_;
@@ -194,7 +194,7 @@ class BufferedDisplay {
   static uint8_t previous_status_counter_;
   static uint8_t previous_blink_counter_;
   static uint8_t cursor_position_;
-  static uint8_t cursor_character_;
+  static char cursor_character_;
   static uint8_t status_;
 
   DISALLOW_COPY_AND_ASSIGN(BufferedDisplay);
@@ -202,11 +202,11 @@ class BufferedDisplay {
 
 /* static */
 template<typename Lcd>
-uint8_t BufferedDisplay<Lcd>::local_[width * height + 1];
+char BufferedDisplay<Lcd>::local_[width * height + 1];
 
 /* static */
 template<typename Lcd>
-uint8_t BufferedDisplay<Lcd>::remote_[width * height];
+char BufferedDisplay<Lcd>::remote_[width * height];
 
 /* static */
 template<typename Lcd>
@@ -238,7 +238,7 @@ uint8_t BufferedDisplay<Lcd>::cursor_position_;
 
 /* static */
 template<typename Lcd>
-uint8_t BufferedDisplay<Lcd>::cursor_character_ = kLcdCursor;
+char BufferedDisplay<Lcd>::cursor_character_ = kLcdCursor;
 
 /* static */
 template<typename Lcd>
