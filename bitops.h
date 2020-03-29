@@ -98,6 +98,25 @@ inline constexpr uint8_t byteAnd(S b1, T b2) {
     return U8(U8(b1) & U8(b2));
 }
 
+// Masks off the low 4 bits
+inline constexpr uint8_t highNibble(uint8_t b) {
+  return byteAnd(b, 0xf0);
+}
+// Masks off the low 4 bits
+inline constexpr uint8_t highNibble(int8_t b) {
+  return byteAnd(b, 0xf0);
+}
+
+// Masks off the low 4 bits
+inline constexpr uint8_t lowNibble(uint8_t b) {
+  return byteAnd(b, 0x0f);
+}
+// Masks off the low 4 bits
+inline constexpr uint8_t lowNibble(int8_t b) {
+  return byteAnd(b, 0x0f);
+}
+
+
 template<typename S, typename T>
 inline constexpr uint16_t wordOr(S w1, T w2) {
   return U16(w1) | U16(w2);
