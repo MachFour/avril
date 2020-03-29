@@ -84,7 +84,7 @@ class EventQueue {
     Event e;
     Word v;
     v.value = Events::ImmediateRead();
-    e.control_type = U8ShiftRight4(v.bytes[0]) >> 2;
+    e.control_type = highNibble(v.bytes[0]) >> 2u;
     e.control_id = v.bytes[0] & 0x3f;
     e.value = v.bytes[1];
     return e;

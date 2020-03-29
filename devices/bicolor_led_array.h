@@ -114,7 +114,7 @@ class BicolorLedArray {
       byte <<= 1;
       uint8_t intensity;
       if (color) {
-        intensity = U8ShiftRight4(~pixels_[i]);
+        intensity = highNibble(byteInverse(pixels_[i]));
       } else {
         intensity = pixels_[i] & 0x0f;
       }

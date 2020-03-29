@@ -86,7 +86,7 @@ COMPILE_FLAGS = \
 # -mcall-prologues may cause code to be slower as registers are saved and popped
 EXTRA_FLAGS ?= -mcall-prologues
 
-WARNING_FLAGS = -Wall -Wextra -pedantic -Wno-narrowing #-Wno-unused-parameter
+WARNING_FLAGS = -Wall -Wextra -pedantic -Wno-narrowing -Winline #-Wno-unused-parameter
 STD = c++2a
 
 CPPFLAGS  = -g $(OPTIMISATION_LEVEL) -std=$(STD) -I. \

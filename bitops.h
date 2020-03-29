@@ -42,12 +42,6 @@ inline constexpr int32_t S32(T x) {
   return static_cast<int32_t>(x);
 }
 
-// returns bit at 8th position (MSB for a byte)
-template <typename T>
-inline constexpr uint8_t MSB8(T x) {
-    return U8((x & 0x80u) != 0);
-}
-
 // easy way to make uint8_t integer literals
 inline constexpr uint8_t operator "" _u8(unsigned long long arg) noexcept {
     return U8(arg);
@@ -64,17 +58,8 @@ inline constexpr uint16_t operator "" _u16(unsigned long long arg) noexcept {
 inline constexpr uint8_t highByte(uint16_t w) {
     return U8(w >> 8u);
 }
-inline constexpr uint8_t highByte(int16_t w) {
-    return U8(U16(w) >> 8u);
-}
 inline constexpr uint8_t lowByte(uint16_t w) {
     return U8(w);
-}
-inline constexpr uint8_t lowByte(int16_t w) {
-    return U8(w);
-}
-inline constexpr int16_t highWord(int32_t i) {
-    return S16(U32(i) >> 16u);
 }
 inline constexpr uint16_t highWord(uint32_t i) {
   return U32(i) >> 16u;
@@ -99,23 +84,19 @@ inline constexpr uint8_t byteAnd(S b1, T b2) {
 }
 
 // Masks off the low 4 bits
+inline constexpr uint8_t highNibbleUnshifted(uint8_t b) {
+  return byteAnd(b, 0xf0);
+}
+
 inline constexpr uint8_t highNibble(uint8_t b) {
-  return byteAnd(b, 0xf0);
+  return highNibbleUnshifted(b) >> 4u;
 }
-// Masks off the low 4 bits
-inline constexpr uint8_t highNibble(int8_t b) {
-  return byteAnd(b, 0xf0);
-}
+
 
 // Masks off the low 4 bits
 inline constexpr uint8_t lowNibble(uint8_t b) {
   return byteAnd(b, 0x0f);
 }
-// Masks off the low 4 bits
-inline constexpr uint8_t lowNibble(int8_t b) {
-  return byteAnd(b, 0x0f);
-}
-
 
 template<typename S, typename T>
 inline constexpr uint16_t wordOr(S w1, T w2) {
@@ -175,6 +156,13 @@ template<typename T>
 inline constexpr bool bitTest(uint16_t word, T bit) {
     return (word & bitFlag16(bit)) != 0;
 }
+
+// returns bit at 8th position (MSB for a byte)
+template <typename T>
+inline constexpr uint8_t MSB8(T x) {
+  return byteAnd(x, 0x80) != 0;
+}
+
 
 //#define mask1(bit1) bitMask(bit1)
 //#define mask2(bit1, bit2) byteOr(bitMask(bit1), bitMask(bit2))
