@@ -194,7 +194,14 @@ static inline uint8_t S16ClipU8(int16_t value) {
 }
 
 static inline int8_t S16ClipS8(int16_t value) {
-  return U8(S16ClipU8(value + 128) + 128);
+  //return S16ClipU8(value + 128) + 128;
+  if (value < -128) {
+    return -128;
+  } else if (value > 127) {
+    return 127;
+  } else {
+    return value;
+  }
 }
 
 static inline uint8_t U8Mix(uint8_t a, uint8_t b, uint8_t balance) {

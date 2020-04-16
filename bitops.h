@@ -89,7 +89,7 @@ inline constexpr uint8_t highNibbleUnshifted(uint8_t b) {
 }
 
 inline constexpr uint8_t highNibble(uint8_t b) {
-  return highNibbleUnshifted(b) >> 4u;
+  return b >> 4u;
 }
 
 
