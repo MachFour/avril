@@ -53,4 +53,6 @@ struct uint24c_t {
   TypeName(const TypeName&);               \
   void operator=(const TypeName&)
 
+#define IGNORE_UNUSED(x) static_cast<void>(x)
+
 #endif  // AVRLIB_BASE_H_

@@ -37,7 +37,7 @@ template<uint16_t eeprom_size = 8192 /* bytes */,
          uint8_t block_size = 32>
 class ExternalEeprom {
  public:
-  ExternalEeprom() { }
+  ExternalEeprom() = default;
 
   static void Init() {
     Bus::Init();
@@ -155,11 +155,12 @@ class ExternalEeprom {
       return Read(size, data);
     }
   }
-  
-  static inline uint8_t Write(uint16_t address, uint8_t byte) {
-    uint8_t data = byte;
-    return Write(&data, 1);
-  }
+
+  // excuse me what the fuck is this
+  //static inline uint8_t Write(uint16_t address, uint8_t byte) {
+  //  uint8_t data = byte;
+  //  return Write(&data, 1);
+  //}
  
  private:
   static uint8_t Write(const uint8_t* header, uint8_t header_size, 

@@ -59,17 +59,22 @@ class SpiMaster {
     }
     DoubleSpeed::clear();
     switch (speed) {
+      default:
+        break;
       case 2:
         DoubleSpeed::set();
+        // fall through
       case 4:
         break;
       case 8:
         DoubleSpeed::set();
+        // fall through
       case 16:
         configuration |= _BV(SPR0);
         break;
       case 32:
         DoubleSpeed::set();
+        // fall through
       case 64:
         configuration |= _BV(SPR1);
         break;
@@ -210,18 +215,18 @@ struct UartSpiPort {
 #ifdef HAS_USART0
 
 typedef UartSpiPort<UartSpi0XCK, UartSpi0TX, UartSpi0RX, UBRR0Register,
-    UCSR0BRegister, _BV(RXEN0) | _BV(TXEN0),
-    UCSR0CRegister, _BV(UMSEL01) | _BV(UMSEL00),
-    BitInRegister<UCSR0ARegister, UDRE0>, UDR0Register> UartSpiPort0;
+            UCSR0BRegister, _BV(RXEN0) | _BV(TXEN0),
+            UCSR0CRegister, _BV(UMSEL01) | _BV(UMSEL00),
+            BitInRegister<UCSR0ARegister, UDRE0>, UDR0Register> UartSpiPort0;
 
 #endif  // HAS_USART0
 
 #ifdef HAS_USART1
 
-typedef UartSpiPort< UartSpi1XCK, UartSpi1TX, UartSpi1RX, UBRR1Register
-    UCSR1BRegister, _BV(RXEN1) | _BV(TXEN1),
-    UCSR1CRegister, _BV(UMSEL11) | _BV(UMSEL10),
-    BitInRegister<UCSR1ARegister, UDRE1>, UDR1Register> UartSpiPort1;
+typedef UartSpiPort<UartSpi1XCK, UartSpi1TX, UartSpi1RX, UBRR1Register,
+            UCSR1BRegister, _BV(RXEN1) | _BV(TXEN1),
+            UCSR1CRegister, _BV(UMSEL11) | _BV(UMSEL10),
+            BitInRegister<UCSR1ARegister, UDRE1>, UDR1Register> UartSpiPort1;
 
 #endif  // HAS_USART1
 

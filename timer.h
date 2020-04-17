@@ -101,10 +101,7 @@ struct TimerImpl {
     *ControlRegisterA::ptr() = (*ControlRegisterA::ptr() & 0xfc) | mode;
   }
   
-  static inline void set_mode(
-      uint8_t wg_mode_1,
-      uint8_t wg_mode_2,
-      uint8_t prescaler) {
+  static inline void set_mode(uint8_t wg_mode_1, uint8_t wg_mode_2, uint8_t prescaler) {
     // Sets the mode registers.
     *ControlRegisterA::ptr() = wg_mode_1;
     *ControlRegisterB::ptr() = wg_mode_2 | prescaler;
@@ -216,7 +213,9 @@ struct NoPwmChannel {
   };
   static inline void Start() { }
   static inline void Stop() { }
-  static inline void Write(uint8_t value) { }
+  static inline void Write(uint8_t value) {
+    IGNORE_UNUSED(value);
+  }
 };
 
 typedef PwmChannel<Timer<0>, COM0A1, OCR0ARegister> PwmChannel0A;

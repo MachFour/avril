@@ -193,6 +193,9 @@ struct Gpio {
   static uint8_t is_high() { return Impl::is_high(); }
 };
 
+// suppress unused parameter warnings here
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wunused-parameter"
 struct DummyGpio {
   static void High() { }
   static void Low() { }
@@ -203,6 +206,7 @@ struct DummyGpio {
   static uint8_t is_low() { return 0; }
   static uint8_t is_high() { return 0; }
 };
+#pragma GCC diagnostic pop
 
 template<typename Gpio>
 struct Inverter {
