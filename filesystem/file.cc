@@ -45,10 +45,7 @@ FilesystemStatus File::Open(
   }
 }
 
-FilesystemStatus File::Open(
-    const char* file_name,
-    uint8_t attributes,
-    uint16_t retry_timeout) {
+FilesystemStatus File::Open(const char* file_name, uint8_t attributes, uint16_t retry_timeout) {
   if (opened_) {
     Close();
   }
@@ -102,7 +99,6 @@ FilesystemStatus File::Read(uint8_t* data, uint16_t size, uint16_t* read) {
   if (!opened_) {
     return FS_NOT_OPENED;
   }
-  
   return static_cast<FilesystemStatus>(f_read(&f_, data, size, read));
 }
 

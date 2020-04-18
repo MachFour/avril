@@ -50,39 +50,22 @@ class File {
     return Open(file_name, attributes, 0);
   }
   
-  FilesystemStatus Open(
-      const char* file_name,
-      const char* mode,
-      uint16_t retry_timeout);
-  FilesystemStatus Open(
-      const char* file_name,
-      uint8_t attributes,
-      uint16_t retry_timeout);  
+  FilesystemStatus Open(const char* file_name, const char* mode, uint16_t retry_timeout);
+  FilesystemStatus Open(const char* file_name, uint8_t attributes, uint16_t retry_timeout);
   
   FilesystemStatus Seek(uint32_t position);
   FilesystemStatus Close();
   FilesystemStatus Truncate();
   FilesystemStatus Sync();
   FilesystemStatus Read(uint8_t* data, uint16_t size, uint16_t* read);
-  FilesystemStatus Write(
-      const uint8_t* data,
-      uint16_t size,
-      uint16_t* written);
+  FilesystemStatus Write(const uint8_t* data, uint16_t size, uint16_t* written);
   
-  FilesystemStatus Write(
-      const char* data,
-      uint16_t size,
-      uint16_t* written) {
-        return Write(static_cast<const uint8_t*>(static_cast<const void*>(
-            data)), size, written);
+  FilesystemStatus Write(const char* data, uint16_t size, uint16_t* written) {
+    return Write(static_cast<const uint8_t*>(static_cast<const void*>( data)), size, written);
   }
 
-  FilesystemStatus Read(
-      char* data,
-      uint16_t size,
-      uint16_t* read) {
-        return Read(static_cast<uint8_t*>(static_cast<void*>(
-            data)), size, read);
+  FilesystemStatus Read(char* data, uint16_t size, uint16_t* read) {
+    return Read(static_cast<uint8_t*>(static_cast<void*>(data)), size, read);
   }
 
   

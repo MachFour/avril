@@ -55,22 +55,26 @@ inline constexpr uint16_t operator "" _u16(unsigned long long arg) noexcept {
 
 // The outermost casts aren't technically needed in these functions,
 // due to the implicit casting to the return type, but they show the intent.
+inline constexpr uint8_t lowByte(uint16_t w) {
+  return U8(w);
+}
+
 inline constexpr uint8_t highByte(uint16_t w) {
     return U8(w >> 8u);
 }
-inline constexpr uint8_t lowByte(uint16_t w) {
-    return U8(w);
-}
+
+
 inline constexpr uint16_t highWord(uint32_t i) {
-  return U32(i) >> 16u;
+  return i >> 16u;
 }
 
 inline constexpr uint16_t word(uint8_t high, uint8_t low) {
   return U16(high << 8u) | low;
 }
 
-inline constexpr uint32_t FourCC(uint8_t a, uint8_t b, uint8_t c, uint8_t d) {
-  return (U32(word(a, b)) << 16u) | word(c, d);
+// Little endian order!!!!!!
+inline constexpr uint32_t FourCC(uint8_t b0, uint8_t b1, uint8_t b2, uint8_t b3) {
+  return (U32(word(b3, b2)) << 16u) | word(b1, b0);
 }
 
 template<typename S, typename T>
@@ -157,9 +161,7 @@ inline constexpr bool bitTest(uint16_t word, T bit) {
     return (word & bitFlag16(bit)) != 0;
 }
 
-// returns bit at 8th position (MSB for a byte)
-template <typename T>
-inline constexpr uint8_t MSB8(T x) {
+inline constexpr bool msb(uint8_t x) {
   return byteAnd(x, 0x80) != 0;
 }
 

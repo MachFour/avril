@@ -19,7 +19,7 @@
 // - Read-only.
 // - The API only exposes the root directory ; though there's a hacky way of
 //   reading other directories through manipulation of the not-so-opaque handle.
-// - Files must be represented by a 83 name when loaded. This is not a big
+// - Files must be represented by an 8/3 name when loaded. This is not a big
 //   problem since this code will be used to open only one pre-determined file
 //   anyway.
 //
@@ -103,7 +103,7 @@ struct BootSector {
   uint16_t signature;
 };
 
-enum DirAttribute {
+enum DirAttribute : uint8_t {
   FILE_READ_ONLY = 1,
   FILE_HIDDEN = 2,
   FILE_SYSTEM = 4,
@@ -150,13 +150,13 @@ enum FatFileReaderStatus {
   FFR_ERROR_FILE_NOT_FOUND,
 };
 
-enum FatType {
+enum FatType : uint8_t {
   FFR_FAT_UNKNOWN = 0,
   FFR_FAT16 = 16,
   FFR_FAT32 = 32
 };
 
-enum HandleType {
+enum HandleType : uint8_t {
   FFR_DIR_HANDLE = 0,
   FFR_FILE_HANDLE
 };
@@ -187,7 +187,7 @@ struct FsHandle {
 template<typename Media, bool safe = false>
 class FATFileReader {
  public:
-  FATFileReader() { }
+  FATFileReader() = default;
   
   // Init the media access layer and look for a FAT file system in the first
   // partition.
@@ -255,7 +255,7 @@ class FATFileReader {
     }
     while (1) {
       // Every 16th entry, we need to move to the next sector.
-      uint8_t offset = (handle->cursor & 0x0f);
+      uint8_t offset = (lowNibble(handle->cursor));
       if (offset == 0) {
         // We have reached the end of the cluster on a FAT32 system!
         if (ReadNextSector(handle)) {
@@ -273,7 +273,7 @@ class FATFileReader {
         continue;
       }
       // Skip current directory, or deleted files
-      if (handle->entry.name[0] == '.' || handle->entry.name[0] == 0xe5) {
+      if (handle->entry.name[0] == '.' || handle->entry.name[0] == static_cast<char>(0xe5)) {
         continue;
       }
       return FFR_OK;
@@ -376,8 +376,8 @@ class FATFileReader {
       return 0;
     }
     uint32_t next_cluster = (fat_type_ == FFR_FAT16)
-      ? sector_.words[cluster & 0xff]
-      : sector_.dwords[cluster & 0x7f] & 0x0fffffff;
+      ? sector_.words[U8(cluster)]
+      : sector_.dwords[U7(cluster)] & 0x0fffffff;
     return next_cluster;
   }
 
@@ -504,6 +504,8 @@ struct DummyMediaInterface {
   }
   
   static uint8_t ReadSectors(uint32_t start, uint8_t num_sectors, uint8_t* data) {
+    IGNORE_UNUSED(start);
+    IGNORE_UNUSED(num_sectors);
     memset(data, 0, 512);
     return 0;
   }

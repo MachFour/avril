@@ -131,12 +131,12 @@ public:
   static inline void Read() {
     Adc::Wait();
     uint16_t value = Adc::ReadOut();
-    int16_t delta = static_cast<int16_t>(value_[scan_cycle_]) - 
-        static_cast<int16_t>(value);
+    int16_t delta = S16(value_[scan_cycle_]) - S16(value);
     if (delta < 0) {
       delta = -delta;
     }
-    if (delta >= thresholds_[scan_cycle_]) {
+    // now delta is always positive, so U16 cast below won't cause any problems
+    if (U16(delta) >= thresholds_[scan_cycle_]) {
       thresholds_[scan_cycle_] = threshold;
       value_[scan_cycle_] = value;
     }
