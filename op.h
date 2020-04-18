@@ -65,10 +65,10 @@ static inline T Clip(uint64_t value, T min, T max) {
 }
 
 static inline int16_t S16ClipU14(int16_t value) {
-  auto msb = highByte(value);
-  if (byteAnd(msb, 0x80)) {
+  uint8_t high = highByte(value);
+  if (byteAnd(high, 0x80)) {
     return 0;
-  } else if (byteAnd(msb, 0x40)) {
+  } else if (byteAnd(high, 0x40)) {
     // saturating cast, 16384 (signed int16) -> 16383 = 2^14 - 1 = MAX_UINT14
     return 16383;
   } else {
