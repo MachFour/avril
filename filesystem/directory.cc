@@ -44,7 +44,7 @@ FilesystemStatus Directory::Next() {
 }
 
 FilesystemStatus Directory::Rewind() {
-  return static_cast<FilesystemStatus>(f_readdir(&d_, NULL));
+  return static_cast<FilesystemStatus>(f_readdir(&d_, nullptr));
 }
 
 

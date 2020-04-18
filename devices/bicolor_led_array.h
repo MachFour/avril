@@ -62,7 +62,7 @@ class BicolorLedArray {
     size = num_regs * 8 - 1
   };
    
-  BicolorLedArray() { }
+  BicolorLedArray() = default;
   
   static inline void Init() {
     Register::Init();
