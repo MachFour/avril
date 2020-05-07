@@ -75,8 +75,8 @@ COMPILE_FLAGS = \
 			-ffreestanding \
 			-fno-common \
 			-fshort-enums \
-			-fno-move-loop-invariants \
 			-nostdlib \
+			-fno-move-loop-invariants \
 			-fverbose-asm \
 			-fdata-sections \
 			-ffunction-sections \
@@ -272,8 +272,9 @@ flash_restore:
 
 RESOURCE_COMPILER = avrlib/tools/resources_compiler.py
 
-resources:	$(wildcard $(RESOURCES)/*.py)
+resources: $(wildcard $(RESOURCES)/*.py) $(RESOURCE_COMPILER)
 		python $(RESOURCE_COMPILER) $(RESOURCES)/resources.py
+
 
 # ------------------------------------------------------------------------------
 # Publish a firmware version on the website

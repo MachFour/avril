@@ -150,6 +150,7 @@ class ResourceTable(object):
     modifier = ' PROGMEM' if not self.ram_based_table else ''
     c_type = self.c_type
     name = self.name
+    # TODO constexpr?
     f.write(
         '\n\nconst %(c_type)s* const %(name)s_table[]%(modifier)s = {\n' % locals())
     for entry in self.entries:
@@ -188,7 +189,9 @@ class ResourceLibrary(object):
 
   def _DeclareTables(self, f):
     for table in self._tables:
-      f.write('extern const %s* const %s_table[] PROGMEM;\n\n' % (table.c_type, table.name))
+      progmem = " PROGMEM" if not table.ram_based_table else ""
+      f.write('extern const %s* const %s_table[]%s;\n\n' % (table.c_type,
+          table.name, progmem))
 
   def _DeclareEntries(self, f):
     for table in self._tables:
@@ -215,17 +218,19 @@ class ResourceLibrary(object):
     if root.create_specialized_manager:
       f.write('#include "avrlib/resources_manager.h"\n')
     self._OpenNamespace(f)
-    f.write('typedef %s ResourceId;\n\n' % \
+    f.write('using ResourceId = %s;\n\n' % \
         root.types[self.max_num_entries > 255])
     self._DeclareTables(f)
     self._DeclareEntries(f)
     self._DeclareAliases(f)
     if root.create_specialized_manager:
-      f.write('typedef avrlib::ResourcesManager<\n')
-      f.write('    ResourceId,\n')
-      f.write('    avrlib::ResourcesTables<\n')
-      f.write('        %s_table,\n' % root.resources[0][1])
-      f.write('        %s_table> > ResourcesManager; \n' % root.resources[1][1])
+      f.write('\n'.join((
+        '', # empty line at start
+        'using ResourcesManager = avrlib::ResourcesManager<ResourceId,',
+        '    avrlib::ResourcesTables<{:s}_table, {:s}_table>>;'.format(
+              root.resources[0][1], root.resources[1][1]),
+        '' # empty line at end
+        )))
     self._CloseNamespace(f)
     f.write('\n#endif  // %s\n' % (header_guard))
     f.close()
