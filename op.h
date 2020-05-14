@@ -65,7 +65,7 @@ static inline T Clip(uint64_t value, T min, T max) {
 }
 
 static inline int16_t S16ClipU14(int16_t value) {
-  uint8_t high = highByte(value);
+  uint8_t high = highByte(U16(value));
   if (byteAnd(high, 0x80)) {
     return 0;
   } else if (byteAnd(high, 0x40)) {
@@ -88,13 +88,13 @@ static inline uint8_t S16ShiftRight8(int16_t value) {
 
 #ifdef USE_OPTIMIZED_OP
 
-static inline uint24c_t U24AddC(uint24c_t a, uint24_t b) {
+static inline uint16_8c_t U24AddC(uint16_8c_t a, uint16_8_t b) {
   uint16_t a_int = a.integral;
   uint16_t b_int = b.integral;
   uint8_t a_frac = a.fractional;
   uint8_t b_frac = b.fractional;
   uint8_t a_carry = 0;
-  uint24c_t result;
+  uint16_8c_t result;
   asm(
     "add %0, %6"      "\n\t"
     "adc %A1, %A7"    "\n\t"
@@ -109,12 +109,12 @@ static inline uint24c_t U24AddC(uint24c_t a, uint24_t b) {
   return result;
 }
 
-static inline uint24_t U24Add(uint24_t a, uint24_t b) {
+static inline uint16_8_t U24Add(uint16_8_t a, uint16_8_t b) {
   uint16_t a_int = a.integral;
   uint16_t b_int = b.integral;
   uint8_t a_frac = a.fractional;
   uint8_t b_frac = b.fractional;
-  uint24_t result;
+  uint16_8_t result;
   asm(
     "add %0, %4"      "\n\t"
     "adc %A1, %A5"    "\n\t"
@@ -127,12 +127,12 @@ static inline uint24_t U24Add(uint24_t a, uint24_t b) {
   return result;
 }
 
-static inline uint24_t U24Sub(uint24_t a, uint24_t b) {
+static inline uint16_8_t U24Sub(uint16_8_t a, uint16_8_t b) {
   uint16_t a_int = a.integral;
   uint16_t b_int = b.integral;
   uint8_t a_frac = a.fractional;
   uint8_t b_frac = b.fractional;
-  uint24_t result;
+  uint16_8_t result;
   asm(
     "sub %0, %4"      "\n\t"
     "sbc %A1, %A5"    "\n\t"
@@ -145,10 +145,10 @@ static inline uint24_t U24Sub(uint24_t a, uint24_t b) {
   return result;
 }
 
-static inline uint24_t U24ShiftRight(uint24_t a) {
+static inline uint16_8_t U24ShiftRight(uint16_8_t a) {
   uint16_t a_int = a.integral;
   uint8_t a_frac = a.fractional;
-  uint24_t result;
+  uint16_8_t result;
   asm(
     "lsr %B1"      "\n\t"
     "ror %A1"    "\n\t"
@@ -161,10 +161,10 @@ static inline uint24_t U24ShiftRight(uint24_t a) {
   return result;
 }
 
-static inline uint24_t U24ShiftLeft(uint24_t a) {
+static inline uint16_8_t U24ShiftLeft(uint16_8_t a) {
   uint16_t a_int = a.integral;
   uint8_t a_frac = a.fractional;
-  uint24_t result;
+  uint16_8_t result;
   asm(
     "lsl %0"    "\n\t"
     "rol %A1"    "\n\t"
@@ -462,7 +462,7 @@ static inline uint8_t U14ShiftRight6(uint16_t value) {
 // a compiler with any sensible optimisation level should turn this into
 // 2 16-bit add/shifts and a move byte (5 insns on AVR-GCC 9)
 static inline uint8_t U14ShiftRight6(uint16_t value) {
-  return highByte(value << 2u);
+  return highByte(U16(value << 2u));
 }
 
 /*
@@ -482,9 +482,9 @@ static inline uint8_t U15ShiftRight7(uint16_t value) {
 */
 
 // a compiler with any sensible optimisation level should turn this into
-// 1 16-bit add and a move byte (3 insns AVR-GCC 9)
+// 1 16-bit add (or lsl) and a move byte (3 insns AVR-GCC 9)
 static inline uint8_t U15ShiftRight7(uint16_t value) {
-  return highByte(value << 1u);
+  return highByte(U16(value << 1u));
 }
 
 static inline int16_t S16U16MulShift16(int16_t a, uint16_t b) {
@@ -614,8 +614,8 @@ static inline uint8_t InterpolateSample(const uint8_t * table, uint16_t phase) {
 
 #else
 
-static inline uint24c_t U24AddC(uint24c_t a, uint24_t b) {
-  uint24c_t result {};
+static inline uint16_8c_t U24AddC(uint16_8c_t a, uint16_8_t b) {
+  uint16_8c_t result {};
 
   uint32_t av = U32(a.integral) << 8u;
   av += a.fractional;
@@ -630,8 +630,8 @@ static inline uint24c_t U24AddC(uint24c_t a, uint24_t b) {
   return result;
 }
 
-static inline uint24_t U24Add(uint24_t a, uint24_t b) {
-  uint24_t result {};
+static inline uint16_8_t U24Add(uint16_8_t a, uint16_8_t b) {
+  uint16_8_t result {};
   
   uint32_t av = U32(a.integral) << 8;
   av += a.fractional;
@@ -645,8 +645,8 @@ static inline uint24_t U24Add(uint24_t a, uint24_t b) {
   return result;
 }
 
-static inline uint24_t U24Sub(uint24_t a, uint24_t b) {
-  uint24_t result;
+static inline uint16_8_t U24Sub(uint16_8_t a, uint16_8_t b) {
+  uint16_8_t result;
   
   uint32_t av = U32(a.integral) << 8;
   av += a.fractional;
@@ -660,8 +660,8 @@ static inline uint24_t U24Sub(uint24_t a, uint24_t b) {
   return result;
 }
 
-static inline uint24_t U24ShiftRight(uint24_t a) {
-  uint24_t result {};
+static inline uint16_8_t U24ShiftRight(uint16_8_t a) {
+  uint16_8_t result {};
   uint32_t av = U32(a.integral) << 8u;
   av += a.fractional;
   av >>= 1u;
@@ -670,8 +670,8 @@ static inline uint24_t U24ShiftRight(uint24_t a) {
   return result;
 }
 
-static inline uint24_t U24ShiftLeft(uint24_t a) {
-  uint24_t result {};
+static inline uint16_8_t U24ShiftLeft(uint16_8_t a) {
+  uint16_8_t result {};
   uint32_t av = U32(a.integral) << 8u;
   av += a.fractional;
   av <<= 1u;

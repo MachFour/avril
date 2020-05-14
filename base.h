@@ -37,17 +37,26 @@ union LongWord {
   uint8_t bytes[4];
 };
 
-struct uint24_t {
+struct uint16_8_t {
   uint16_t integral;
   uint8_t fractional;
 };
 
-struct uint24c_t {
+struct uint16_8c_t {
   uint8_t carry;
   uint16_t integral;
   uint8_t fractional;
 };
 
+#ifndef __UINT24_MAX__
+#error "__uint24 not defined"
+using uint24_t = uint32_t;
+using int24_t = int32_t;
+#else
+// avr-gcc inbuilt type
+using uint24_t = __uint24;
+using int24_t = __int24;
+#endif
 
 #define DISALLOW_COPY_AND_ASSIGN(TypeName) \
   TypeName(const TypeName&);               \

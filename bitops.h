@@ -6,6 +6,7 @@
 #define AVRLIB_BITOPS_H
 
 #include <inttypes.h>
+#include "base.h"
 
 // get rid of warnings about unsigned bitwise operations
 
@@ -63,9 +64,16 @@ inline constexpr uint8_t highByte(uint16_t w) {
     return U8(w >> 8u);
 }
 
+inline constexpr uint8_t highByte24(uint24_t d) {
+  return U8(d >> 16u);
+}
+
+inline constexpr uint16_t highWord24(uint24_t d) {
+  return U16(d >> 8u);
+}
 
 inline constexpr uint16_t highWord(uint32_t i) {
-  return i >> 16u;
+  return U16(i >> 16u);
 }
 
 inline constexpr uint16_t word(uint8_t high, uint8_t low) {

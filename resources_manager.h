@@ -41,20 +41,18 @@ struct ResourcesTables {
 };
 
 struct NoResourcesTables {
-  static inline const char* const* string_table() { return NULL; }
-  static inline const uint16_t* const* lookup_table_table() { return NULL; }
+  static inline const char* const* string_table() { return nullptr; }
+  static inline const uint16_t* const* lookup_table_table() { return nullptr; }
 };
 
 template<typename ResourceId = uint8_t, typename Tables = NoResourcesTables>
 class ResourcesManager {
  public:
-  static inline void LoadStringResource(ResourceId resource, char* buffer,
-                                        uint8_t buffer_size) {
+  static inline void LoadStringResource(ResourceId resource, char* buffer, uint8_t buffer_size) {
     if (!Tables::string_table()) {
       return;
     }
-    auto string_addr = reinterpret_cast<char*>(
-            pgm_read_word(&(Tables::string_table()[resource])));
+    auto string_addr = reinterpret_cast<char*>(pgm_read_word(&(Tables::string_table()[resource])));
     strncpy_P(buffer, string_addr, buffer_size);
   }
 
@@ -63,8 +61,7 @@ class ResourcesManager {
     if (!Tables::lookup_table_table()) {
       return 0;
     };
-    auto resource_start_addr = reinterpret_cast<uint16_t*>(
-            pgm_read_word(&(Tables::lookup_table_table()[resource])));
+    auto resource_start_addr = reinterpret_cast<uint16_t*>(pgm_read_word(&(Tables::lookup_table_table()[resource])));
     return ResultType(pgm_read_word(resource_start_addr + i));
   }
 
