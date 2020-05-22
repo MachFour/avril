@@ -70,14 +70,18 @@ enum DigitalValue {
 // Represents a bit in an i/o port register.
 template<typename Register, uint8_t bit, uint8_t bitFlag = staticBitFlag(bit)>
 struct BitInRegister {
+  // do assignments in 2 lines cause of volatile deprecation
   inline static void clear() {
-    *Register::ptr() &= ~bitFlag;
+    uint8_t newValue = *Register::ptr() & ~bitFlag;
+    *Register::ptr() = newValue;
   }
   inline static void set() {
-    *Register::ptr() |= bitFlag;
+    uint8_t newValue = *Register::ptr() | bitFlag;
+    *Register::ptr() = newValue;
   }
   inline static void toggle() {
-    *Register::ptr() ^= bitFlag;
+    uint8_t newValue = *Register::ptr() ^ bitFlag;
+    *Register::ptr() = newValue;
   }
   inline static uint8_t value() {
     return (*Register::ptr() & bitFlag) ? 1 : 0;
@@ -86,29 +90,35 @@ struct BitInRegister {
 
 // A new method?
 
+/* TODO isn't PIN write only - so don't need to read? */ \
 #define IO8Port(port) \
 template<uint8_t bit> \
   struct Port##port##Pin { \
     static constexpr uint8_t bitFlag = staticBitFlag(bit); \
     __attribute__((always_inline)) \
     static inline void outputMode() { \
-      DDR##port |= bitFlag; \
+      uint8_t newValue = DDR##port | bitFlag; \
+      DDR##port = newValue; \
     } \
     __attribute__((always_inline)) \
     static inline void inputMode() { \
-      DDR##port &= byteInverse(bitFlag); \
+      uint8_t newValue = DDR##port & byteInverse(bitFlag); \
+      DDR##port = newValue; \
     } \
     __attribute__((always_inline)) \
     static inline void high() { \
-      PORT##port |= bitFlag; \
+      uint8_t newValue = PORT##port | bitFlag; \
+      PORT##port = newValue; \
     } \
     __attribute__((always_inline)) \
     static inline void low() { \
-      PORT##port &= byteInverse(bitFlag); \
+      uint8_t newValue = PORT##port & byteInverse(bitFlag); \
+      PORT##port = newValue; \
     } \
     __attribute__((always_inline)) \
     static inline void toggle() { \
-      PIN##port |= bitFlag; \
+      uint8_t newValue = PIN##port | bitFlag; \
+      PIN##port = newValue; \
     } \
     __attribute__((always_inline)) \
     static inline uint8_t read() { \

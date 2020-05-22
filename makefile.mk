@@ -87,9 +87,8 @@ COMPILE_FLAGS = \
 EXTRA_FLAGS ?= -mcall-prologues
 
 WARNING_FLAGS = -Wall -Wextra -pedantic -Wno-narrowing -Winline #-Wno-unused-parameter
-STD = c++2a
 
-CPPFLAGS  = -g $(OPTIMISATION_LEVEL) -std=$(STD) -I. \
+CPPFLAGS  = -g $(OPTIMISATION_LEVEL) -I. \
 			-mmcu=$(MCU) \
 			$(WARNING_FLAGS) \
 			$(COMPILE_FLAGS) \
@@ -101,7 +100,8 @@ CPPFLAGS  = -g $(OPTIMISATION_LEVEL) -std=$(STD) -I. \
 			-DSERIAL_RX_0 \
 			#-Wsign-conversion -Wconversion
 # these are from https://bitbashing.io/embedded-cpp.html
-CXXFLAGS      = -fno-exceptions -fno-non-call-exceptions \
+CFLAGS        = -std=c11
+CXXFLAGS      = -std=c++2a -fno-exceptions -fno-non-call-exceptions \
 				-fno-use-cxa-atexit -fno-rtti
 ASFLAGS       = -mmcu=$(MCU) -I. -x assembler-with-cpp
 LDFLAGS       = -mmcu=$(MCU) -lm -Os -flto -Wl,--relax -Wl,--gc-sections$(EXTRA_LD_FLAGS)
@@ -114,7 +114,7 @@ $(BUILD_DIR)%.o: %.cc
 	$(CXX) -c $(CPPFLAGS) $(CXXFLAGS) $< -o $@
 
 $(BUILD_DIR)%.o: %.c
-	$(CC) -c $(CPPFLAGS) $(CXXFLAGS) $< -o $@
+	$(CC) -c $(CPPFLAGS) $(CFLAGS) $< -o $@
 
 $(BUILD_DIR)%.o: %.s
 	$(CC) -c $(CPPFLAGS) $(ASFLAGS) $< -o $@
@@ -123,7 +123,7 @@ $(BUILD_DIR)%.d: %.cc
 	$(CXX) -MM $(CPPFLAGS) $(CXXFLAGS) $< -MF $@ -MT $(@:.d=.o)
 
 $(BUILD_DIR)%.d: %.c
-	$(CC) -MM $(CPPFLAGS) $(CXXFLAGS) $< -MF $@ -MT $(@:.d=.o)
+	$(CC) -MM $(CPPFLAGS) $(CFLAGS) $< -MF $@ -MT $(@:.d=.o)
 
 $(BUILD_DIR)%.d: %.s
 	$(CC) -MM $(CPPFLAGS) $(ASFLAGS) $< -MF $@ -MT $(@:.d=.o)
@@ -211,7 +211,7 @@ size: $(TARGET).size
 
 size_report:  build/$(TARGET)/$(TARGET).lss build/$(TARGET)/$(TARGET).top_symbols
 
-.PHONY: all clean depends upload
+.PHONY: all clean depends upload resources
 
 include $(DEP_FILE)
 
